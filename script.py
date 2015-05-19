@@ -17,6 +17,7 @@ from win32com.client import constants
 # python makepy.py -i VISLIB.DLL
 from win32com.client import gencache
 gencache.EnsureModule('{00021A98-0000-0000-C000-000000000046}', 0, 4, 11)
+#Test
 
 #===========================================================================================================================
 # Return true if the passed in entity is an ISP equipment, otherwise return false
@@ -116,48 +117,45 @@ def main():
 	trace_Reports_Desc.append("Date")
 
 	
-	for result in TraceResults().getTraceResults():
+	for result in TraceResults().getTraceResults(): #for each result in the trace report
 
 		entity_list = []
 		#===========================================================================================================================
 		# Trace helper function
 		#===========================================================================================================================
 		def storeTraceResult(node,direction,parent):
-			entity_list.append(node)
+			entity_list.append(node) #append the nodes to the end of the entity list
 		#result.trace_tree.applyBidirectional(core.tdm.trace.TraceNode.printCallback, walk_type = "bidirectional")
 		#print "----------"
-		result.trace_tree.applyBidirectional(storeTraceResult)
+		result.trace_tree.applyBidirectional(storeTraceResult) #traverse the trace tree in both directions
 
-		if len(entity_list)>1:
+		if len(entity_list)>1: #if the length of the entity list is more than 1 then
 
-			trace_Report = attributes = [""]*23
-			osp_indx_1 = -1
-			osp_indx_2 = len(entity_list)
+			trace_Report = attributes = [""]*23 #declare trace_reports with 23 empty attributes
+			osp_indx_1 = -1                   #osp index 1 set to -1 (for flagging when the circuit has hit OSP fiber)
+			osp_indx_2 = len(entity_list)     #osp index 2 set to length of entity list (same purpose as above)
 			
 			#master circuit details
 			master_circuit = None
-			if result.segment.is_class("_tdm_hascircuitproperties"):
-				circuit_state = SPATIALnet.service(
-					"ndm$property_get_circuitstate",
-					result.segment,
-					result.sequence)
+			if result.segment.is_class("_tdm_hascircuitproperties"):  #checking if the segment of the current result is part of _tdm_hascircuitproperties
+				circuit_state = SPATIALnet.service("ndm$property_get_circuitstate", result.segment, result.sequence)  #retrieve the circuit state from spatialnet service
 					
-				if result.channel:
-					for ch in circuit_state.fdm_sub_channel_scan:
+				if result.channel: #if the result is channelized
+					for ch in circuit_state.fdm_sub_channel_scan: #loop through all the channels and if the the channel matches the circuit state channel then the circuit ID is on that channel
 						if ch.fdm_ring_sequence == result.channel:
 							master_circuit = ch.fdm_ringmaster_fk
 							break
 						
-				if master_circuit is None:
-					master_circuit = circuit_state.fdm_ringmaster_fk
-				if master_circuit:
-						mc = str(master_circuit.fdm_ringmaster_name)
-						trace_Report[19] = mc
-						if master_circuits.count(mc)==0 and mc is not None and len(mc)>0:
-							master_circuits.append(mc)
-			else:
-				if len(master_circuits)>0:
-					trace_Report[19] = master_circuits[len(master_circuits)-1]
+				if master_circuit is None:   #if there is no master circuit then
+					master_circuit = circuit_state.fdm_ringmaster_fk   #set the master circuit to the circuit ID in the circuit state
+				if master_circuit:   #if there is a master circuit then
+						mc = str(master_circuit.fdm_ringmaster_name) # set mc = to the ring name (CLFI) after making it a string
+						trace_Report[19] = mc #put the master circuit ID into attribute 19 in the trace report
+						if master_circuits.count(mc)==0 and mc is not None and len(mc)>0: #if there are no master circuits and mc is not empty and the length of mc is greater than 0 then
+							master_circuits.append(mc)  #append mc to the end of master_circuits
+			else: #if the segment of the current result is not part of _tdm_hascircuitproperties then
+				if len(master_circuits)>0: #check if the length of master_circuits is greater than 0
+					trace_Report[19] = master_circuits[len(master_circuits)-1]  #make the last master circuit added the attribute 
 
 			#JOB NAME
 			trace_Report[20] =  str(eam.current_job().jms_job_description)
@@ -179,62 +177,62 @@ def main():
 			customer_site_indx = 0
 			headend_site_indx = 10
 
-			for i in range(len(entity_list)):
+			for i in range(len(entity_list)): #loop through the entity list
 			
-				ent2 = entity_list[i].entity
+				ent2 = entity_list[i].entity #take the ith entity and put it into ent2
 				
-				if ent2.is_class("ISP_PORT"):
+				if ent2.is_class("ISP_PORT"): #if the current entity is an ISP_PORT
 				
 					#print str(entity_list[i].entity)+ " : depth("+ str(entity_list[i].depth)+"), branch("+str(entity_list[i].branch_number)+")"
 				
-					if first_port is None:
-						first_port = ent2
+					if first_port is None: #and if the first port has not yet been found then
+						first_port = ent2  #make the ith entity the first port
 
-					parent = ent2.ISPA_PORT_OWNER_FK
+					parent = ent2.ISPA_PORT_OWNER_FK #find the parent of the ent2
 
-					if parent.fdm_interface_fk is not None:
+					if parent.fdm_interface_fk is not None: #if the parent has an osp interface then
 						#found patch panel
-						chassis = getChassis(ent2)
+						chassis = getChassis(ent2)  #get the chassis of ent2
 						pnl = checkValue(chassis.ISPA_NAME) + " ; "+checkValue(chassis.ISPA_SECTION_F_CODE) + " ; " + checkValue(ent2.ISPA_PORT_NAME) 
-						a_end_equip.append(addedInJob(chassis,"Patch Panel")+": "+pnl)
+						a_end_equip.append(addedInJob(chassis,"Patch Panel")+": "+pnl) #get the name of the panel and all information
 
 					#check for De(Mux) or patch panel
-					else:
+					else:     #if the parent has no osp interface
 						#Dictionary look up for isp equipment
 						try:
-							equip_type_details = equip_dict.values(parent.ISPA_EQUIP_DICT_FK.NETWORK_KEY)
-							desc = checkValue(equip_type_details.DESC1)
+							equip_type_details = equip_dict.values(parent.ISPA_EQUIP_DICT_FK.NETWORK_KEY)  #get the details of the type of equipment that is ent2
+							desc = checkValue(equip_type_details.DESC1) #get the description of the chassis from the dictionary
 
-							if desc.upper().find("MULTIPLEXER")!= -1:
-								#found mux
+							if desc.upper().find("MULTIPLEXER")!= -1: #if there is the substring MULTIPLEXER in the description of the chassis then
+								#found mux! Now get the information of the mux shelf
 								mux = checkValue(equip_type_details.MODEL) + " ; " + desc + " ; "+ checkValue(parent.ISPA_SECTION_F_CODE) + " ; "+ checkValue(parent.ISPA_NAME)
 
-								if a_end_equip.count(addedInJob(parent,"Mux")+": "+mux)==0:
-									a_end_equip.append(addedInJob(parent,"Mux")+": "+mux)
+								if a_end_equip.count(addedInJob(parent,"Mux")+": "+mux)==0: #if the parent and the mux were both added in this job then
+									a_end_equip.append(addedInJob(parent,"Mux")+": "+mux)      #add the parent chassis to the a_end_equipment
 							else:
 								#found true end
-								if ent2 != first_port and entity_list[i].branch_number==1:
-									correct_order=False
-									
+								if ent2 != first_port and entity_list[i].branch_number==1: #if ent2 is not the first port and the ith element in the entity list's branch # = 1 then
+									correct_order=False #the entities are not in the correct order
+									         #add all information for the isp a end
 								a_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1
 
 						except Exception as e:
 							#lov conversion not found
 							print e
 
-				elif ent2.is_class("COUPLER_PORTGR"):
+				elif ent2.is_class("COUPLER_PORTGR"): #if the a end is not a mux then check if it a demux so check if it is from the class COUPLER_PORTGR
 					#check for De(Mux)
-					coupler = ent2.ndm_port_owner
-					isp_rack = coupler.PARENT_NODEHOUSING
+					coupler = ent2.ndm_port_owner  #if ent2 is in the coupler class then put its parent in coupler
+					isp_rack = coupler.PARENT_NODEHOUSING  #put the housing of the coupler (rack) into isp_rack
 
-					if len(a_end_osp_cable) ==0:
-						if ent2.is_class("_tdm_hascircuitproperties"):
-							circuit_state = SPATIALnet.service("ndm$property_get_circuitstate",entity_list[i+1].entity,entity_list[i+1].sequence)
-							a_end_osp_cable = checkValue(circuit_state.fdm_usage_desc)
+					if len(a_end_osp_cable) ==0: #if the length of the list of osp cables is 0 (no osp cables have been discovered yet) then
+						if ent2.is_class("_tdm_hascircuitproperties"): #check if ent2 has circuit properties
+							circuit_state = SPATIALnet.service("ndm$property_get_circuitstate",entity_list[i+1].entity,entity_list[i+1].sequence)#get the circuit state of the next entity in the list 
+							a_end_osp_cable = checkValue(circuit_state.fdm_usage_desc) #get the description of the circuit state
 					
-					if isp_rack.is_class("ISP_RACK"):
-						is_wdm = coupler.fdm_equip_type_code.upper().find("WDM_10WAY") != -1
-						if (is_wdm and entity_list[i].sequence!= 1) or (not is_wdm and entity_list[i].sequence==3):
+					if isp_rack.is_class("ISP_RACK"):  #if isp_rack is a rack then
+						is_wdm = coupler.fdm_equip_type_code.upper().find("WDM_10WAY") != -1 #flag if coupler has WDM_10WAY in its description 
+						if (is_wdm and entity_list[i].sequence!= 1) or (not is_wdm and entity_list[i].sequence==3): 
 							mux = checkValue(coupler.fdm_equip_name) + " ; " + checkValue(coupler.fdm_equip_type_code) + " ; " + checkValue(isp_rack.ISPA_NAME) + " ; " + checkValue(isp_rack.ISPA_SECTION_F_CODE)
 				
 							if ent2.is_class("_tdm_hascircuitproperties"):
