@@ -564,17 +564,17 @@ def main():
 		
 		for tr_indx in range(1,len(trace_Reports)): #loop through all trace reports
 			counter=0
-			trace_Report = trace_Reports[tr_indx]
-			for r in trace_Report:
-				if counter==7 or counter==17:
+			trace_Report = trace_Reports[tr_indx] # set trace report to the ith trace report
+			for r in trace_Report: #for each attribute in the trace report
+				if counter==7 or counter==17: # if iteration is on a end or z end equipment then
 										
-					if len(report_merged[counter])==0:
+					if len(report_merged[counter])==0: #if equipment has not yet been filled in then fill it in with current equipment name
 						report_merged[counter] = r
-					elif len(r)==0:
+					elif len(r)==0:  #if not and the current report has no equipment name then move on
 						pass
-					else:
+					else: # if they are both not empty then
 						c = 0
-						while len(r)!=len(report_merged[counter]):
+						while len(r)!=len(report_merged[counter]): #do while the length of current report equipment name and merged report equipment name are not equal
 							if len(r) < len(report_merged[counter]):
 								r.insert(c,report_merged[counter][c])
 							elif len(r) > len(report_merged[counter]):
