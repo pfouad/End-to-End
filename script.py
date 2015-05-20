@@ -524,45 +524,45 @@ def main():
 			index = 0
 			direction = -1
 			
-			if trace_Report[0] == trace_Report[10] and trace_Report[0].find("ISP_BUILDING")==-1:
+			if trace_Report[0] == trace_Report[10] and trace_Report[0].find("ISP_BUILDING")==-1: #if a site and z siet are equal and if a site is an isp building then make the flag false (don't add the trace)
 				flag = False
-			else:
-				for r in trace_Reports:
+			else: #if the trace is not within the same building then
+				for r in trace_Reports:  #for each report in trace report
 					cond1 = r[6] == trace_Report[6] and r[16] == trace_Report[16]#end equip
 					cond2 = r[6] == trace_Report[16] and r[16] == trace_Report[6]#end quip
 					cond3 = r[0] == trace_Report[0] and r[10] == trace_Report[10]#site
 					cond4 = r[0] == trace_Report[10] and r[10] == trace_Report[0]#site
 					cond5 = r[19] == trace_Report[19]
 					
-					if cond5:
-						if cond3 or cond4:
-							if cond1 or cond2:
+					if cond5: #if the master circuit is the same between the rth trace report and the current one
+						if cond3 or cond4: #if the sites are the same  between the rth trace report and the current one
+							if cond1 or cond2: #if the equipment has the same name then don't add the trace
 								flag=False
 								break
-							elif len(trace_Report[6])>len(r[6]) or len(trace_Report[16])>len(r[16]):
+							elif len(trace_Report[6])>len(r[6]) or len(trace_Report[16])>len(r[16]): #if the name of the equipment in the current trace is longer on either end then set direction and don't append the trace 
 								direction = 1
 								flag=False
 								break
-							elif len(trace_Report[6])<=len(r[6]) or len(trace_Report[16])<=len(r[16]):
+							elif len(trace_Report[6])<=len(r[6]) or len(trace_Report[16])<=len(r[16]):#if the name of the equipment in the current trace is shorter or the same on either side then don't append  
 								flag=False
 								break
 
-					index = index+1
+					index = index+1 #increase index
 
-			if direction ==1:
-				trace_Reports.pop(index)
-				trace_Reports.insert(index,trace_Report)
+			if direction ==1: #if direction is set then
+				trace_Reports.pop(index) #take out trace at position index
+				trace_Reports.insert(index,trace_Report) #add current trace in position index
 			
-			if flag:
+			if flag: #if flag is not false then append the trace report
 				trace_Reports.append(trace_Report)
 
 	#print len(trace_Reports)
 	#Merge Rx & Tx
 	report_merged = []
-	if len(master_circuits)>1 and len(trace_Reports)>1:
-		report_merged = trace_Reports[0]
+	if len(master_circuits)>1 and len(trace_Reports)>1: # if the length of both master circuits and trace reports are greater than 1 then
+		report_merged = trace_Reports[0]  #set report merged to first trace report
 		
-		for tr_indx in range(1,len(trace_Reports)):
+		for tr_indx in range(1,len(trace_Reports)): #loop through all trace reports
 			counter=0
 			trace_Report = trace_Reports[tr_indx]
 			for r in trace_Report:
