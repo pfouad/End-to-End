@@ -232,14 +232,14 @@ def main():
 					
 					if isp_rack.is_class("ISP_RACK"):  #if isp_rack is a rack then
 						is_wdm = coupler.fdm_equip_type_code.upper().find("WDM_10WAY") != -1 #flag if coupler has WDM_10WAY in its description 
-						if (is_wdm and entity_list[i].sequence!= 1) or (not is_wdm and entity_list[i].sequence==3): 
+						if (is_wdm and entity_list[i].sequence!= 1) or (not is_wdm and entity_list[i].sequence==3): #if the coupler is wdm the ith entity has a sequence not equal to 1 OR coupler is not wdm and ith entity has sequence = 3 then put all information in mux  
 							mux = checkValue(coupler.fdm_equip_name) + " ; " + checkValue(coupler.fdm_equip_type_code) + " ; " + checkValue(isp_rack.ISPA_NAME) + " ; " + checkValue(isp_rack.ISPA_SECTION_F_CODE)
 				
-							if ent2.is_class("_tdm_hascircuitproperties"):
-								circuit_state = SPATIALnet.service("ndm$property_get_circuitstate",ent2,entity_list[i].sequence)
-								a_end_equip.append(addedInJob(ent2,"Multi-Fiber Cable")+": "+checkValue(circuit_state.fdm_usage_desc))
+							if ent2.is_class("_tdm_hascircuitproperties"): #if ent2 has circuit properties then
+								circuit_state = SPATIALnet.service("ndm$property_get_circuitstate",ent2,entity_list[i].sequence) #get its circuit state
+								a_end_equip.append(addedInJob(ent2,"Multi-Fiber Cable")+": "+checkValue(circuit_state.fdm_usage_desc)) #append the multifiber cable added in the job
 
-							a_end_equip.append(addedInJob(coupler,"Mux")+": "+mux)
+							a_end_equip.append(addedInJob(coupler,"Mux")+": "+mux) #append the mux added in the job
 								
 							if ent2.is_class("_tdm_hascircuitproperties"):
 								circuit_state = SPATIALnet.service("ndm$property_get_circuitstate",entity_list[i+1].entity,entity_list[i+1].sequence)
@@ -247,9 +247,9 @@ def main():
 
 
 				#check for patch cord
-				elif ent2.is_class("ISP_PATCH_CORD"):
+				elif ent2.is_class("ISP_PATCH_CORD"): #if the current entity is a patch cord then
 
-					desc = "Length: "+ str(ent2.LE_LENGTH) + " ; "
+					desc = "Length: "+ str(ent2.LE_LENGTH) + " ; " #get the length of the patch cord
 					
 					#Dictionary look up for isp equipment
 					try:
@@ -261,27 +261,27 @@ def main():
 						print (str(e))
 					
 					
-					a_end_equip.append(addedInJob(ent2,"Patch Cable")+": "+desc)
+					a_end_equip.append(addedInJob(ent2,"Patch Cable")+": "+desc) #append the patch cable to a_end_equipment
 						
 					
 				#if found FIBER_CABLE_SEG_UNCON, check connections on both sides to ensure it leaves the building.
 				#if not, this could be a data issue
 				
-				elif ent2.is_class("FIBER_CABLE_SEG_UNCON"):
+				elif ent2.is_class("FIBER_CABLE_SEG_UNCON"): #check if the current entity is a fiber segment
 				
 					try:
-						owner = ent2.ndm_leseg_owner
-						start_joint_parent = owner.ndm_le_startjoint.PARENT_NODEHOUSING
-						end_joint_parent = owner.ndm_le_endjoint.PARENT_NODEHOUSING
+						owner = ent2.ndm_leseg_owner #get owner
+						start_joint_parent = owner.ndm_le_startjoint.PARENT_NODEHOUSING #get start joint
+						end_joint_parent = owner.ndm_le_endjoint.PARENT_NODEHOUSING  #get end joint
 						
-						if not (is_isp_class(start_joint_parent) and is_isp_class(end_joint_parent)):
-							osp_indx_1 = i
+						if not (is_isp_class(start_joint_parent) and is_isp_class(end_joint_parent)): #if both joints are not in the isp then
+							osp_indx_1 = i #make i the osp index 1 and break out of loop (entity i is where osp starts)
 							break
 					except Exception as e:
 						osp_indx_1 = i
 						break
 
-				elif not (is_isp_class(ent2)):
+				elif not (is_isp_class(ent2)): #if the ith entity is not in the isp layer then its in osp and break.
 					osp_indx_1 = i
 					break
 					
@@ -314,24 +314,24 @@ def main():
 			correct_order = True
 			first_port = None
 
-			for r in reversed(xrange(len(entity_list))):
+			for r in reversed(xrange(len(entity_list))): #start from the last entity in the list and loop
 
-				ent2 = entity_list[r].entity
+				ent2 = entity_list[r].entity #make ent2 the rth entity in the entity list
 						
-				if ent2.is_class("ISP_PORT"):
+				if ent2.is_class("ISP_PORT"): #if ent2 is an isp port then
 				
 					#print str(entity_list[r].entity)+ "(z) : depth("+ str(entity_list[r].depth)+"), branch("+str(entity_list[r].branch_number)+")"
 				
-					if first_port is None:
+					if first_port is None: #if the first port has not been discovered yet then ent2 is the first port
 						first_port = ent2
 
-					parent = ent2.ISPA_PORT_OWNER_FK
+					parent = ent2.ISPA_PORT_OWNER_FK #get ent2's parent
 					#check for patch panel
 					
-					if parent.fdm_interface_fk is not None:
-						chassis = getChassis(ent2)
-						pnl = checkValue(chassis.ISPA_NAME) + " ; "+checkValue(chassis.ISPA_SECTION_F_CODE) + " ; " + checkValue(ent2.ISPA_PORT_NAME) 
-						z_end_equip.append(addedInJob(chassis,"Patch Panel")+": "+pnl)
+					if parent.fdm_interface_fk is not None: #if there is some osp interface then
+						chassis = getChassis(ent2)  #get the chassis of ent2 (it is a panel)
+						pnl = checkValue(chassis.ISPA_NAME) + " ; "+checkValue(chassis.ISPA_SECTION_F_CODE) + " ; " + checkValue(ent2.ISPA_PORT_NAME)  #put all information into pnl
+						z_end_equip.append(addedInJob(chassis,"Patch Panel")+": "+pnl) #append pnl into z end equipment
 
 					#check for De(Mux) or patch panel
 					else:
@@ -436,17 +436,18 @@ def main():
 			z_end_location = z_end_nh.fdm_nh_location
 			
 			#check a/z end addresses
-			add_a_end = True
+			add_a_end = True   #if both of these are true then add customer and headend locations
 			add_z_end = True
 			
-			if z_end_address == a_end_address:
-				if z_end_type.upper() == "CUSTOMER":
-					add_a_end=False
-				else:
-					add_z_end=False
+			if z_end_address == a_end_address: #if the trace is within the same building and
+				if z_end_type.upper() == "CUSTOMER": # if z end is the customer end
+					add_a_end=False    #dont add the a side
+				else:        #otherwise
+					add_z_end=False   #don't add z end
 					
 					
 			#check for z_end_equip ending with multi-fiber cable
+            #checking both ends if the last thing appended was a multifiber cable
 			if len(a_end_equip)>0:
 				if a_end_equip[len(a_end_equip)-1].find("Multi-Fiber") != -1:
 					a_end_equip.pop(len(a_end_equip)-1)
@@ -455,7 +456,7 @@ def main():
 				if z_end_equip[len(z_end_equip)-1].find("Multi-Fiber") != -1:
 					z_end_equip.pop(len(z_end_equip)-1)
 
-			if add_a_end:
+			if add_a_end: #if the add a end flag is true then add 
 				trace_Report[headend_site_indx] = str(z_end_nh)
 				trace_Report[headend_site_indx+1] = str(z_end_name)
 				trace_Report[headend_site_indx+2] = str(z_end_clli)
