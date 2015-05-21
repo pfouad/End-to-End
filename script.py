@@ -479,45 +479,45 @@ def main():
 			osp_mux = ""
 			#iterate through OSP equipment
 
-			if len(a_end_osp_cable)==0:
-				for a in range(osp_indx_1+1,osp_indx_2):
-					ent2 = entity_list[a].entity
-					if ent2.is_class("FIBER_CABLE_SEG_UNCON"):
-						if ent2.is_class("_tdm_hascircuitproperties"):
-							circuit_state = SPATIALnet.service("ndm$property_get_circuitstate",ent2,entity_list[a].sequence)
-							a_end_osp_cable = checkValue(circuit_state.fdm_usage_desc)
-							break
+			if len(a_end_osp_cable)==0:  #if a_end_osp_cable is empty
+				for a in range(osp_indx_1+1,osp_indx_2): #loop from osp index 1 to osp index 2
+					ent2 = entity_list[a].entity  #get the ath entity from the entity list
+					if ent2.is_class("FIBER_CABLE_SEG_UNCON"): #if that entity is a fiber cable segment then
+						if ent2.is_class("_tdm_hascircuitproperties"): # if that entity has a circuit ID
+							circuit_state = SPATIALnet.service("ndm$property_get_circuitstate",ent2,entity_list[a].sequence) #get the circuit state for that entity
+							a_end_osp_cable = checkValue(circuit_state.fdm_usage_desc) # make that the a_end_osp_cable
+							break #get out of for loop
 
-			if len(z_end_osp_cable)==0:
-				for a in reversed(xrange(osp_indx_1+1,osp_indx_2+1)):
-					ent2 = entity_list[a].entity
-					if ent2.is_class("FIBER_CABLE_SEG_UNCON"):
-						if ent2.is_class("_tdm_hascircuitproperties"):
-							circuit_state = SPATIALnet.service("ndm$property_get_circuitstate",ent2,entity_list[a].sequence)
-							z_end_osp_cable = checkValue(circuit_state.fdm_usage_desc)
-							break
+			if len(z_end_osp_cable)==0: #if the z_end_osp_cable is empty
+				for a in reversed(xrange(osp_indx_1+1,osp_indx_2+1)):#loop from osp index 2 (add 1) down to osp index 1 (add 1)
+					ent2 = entity_list[a].entity #get the ath entity from the entity list
+					if ent2.is_class("FIBER_CABLE_SEG_UNCON"): # if the entity is an osp fiber cable segment then 
+						if ent2.is_class("_tdm_hascircuitproperties"): # if the entity has a circuit ID then 
+							circuit_state = SPATIALnet.service("ndm$property_get_circuitstate",ent2,entity_list[a].sequence) #get the circuit state for that entity
+							z_end_osp_cable = checkValue(circuit_state.fdm_usage_desc) # make that the z end osp cable
+							break #get out of for loop
 
 			#look for any De(mux) located OSP
 
-			for a in range(osp_indx_1+1,osp_indx_2):
-				ent2 = entity_list[a].entity
+			for a in range(osp_indx_1+1,osp_indx_2): #loop from osp index 1 (add 1) to osp index 2
+				ent2 = entity_list[a].entity  #get the ath entity
 
-				if ent2.is_class("COUPLER_PORTGR"):
-					coupler = ent2.ndm_port_owner
-					splice_case = coupler.PARENT_NODEHOUSING
+				if ent2.is_class("COUPLER_PORTGR"): #if the entity is a coupler port
+					coupler = ent2.ndm_port_owner #set coupler to the owner of that port
+					splice_case = coupler.PARENT_NODEHOUSING # set splice_case to parent of the coupler
 
-					is_10waywdm = coupler.fdm_equip_type_code.upper().find("WDM_10WAY") != -1
-					is_wdm = coupler.fdm_equip_type_code.upper().find("WDM") != -1
+					is_10waywdm = coupler.fdm_equip_type_code.upper().find("WDM_10WAY") != -1 #create condidtion (if the coupler is a 10 way wdm)
+					is_wdm = coupler.fdm_equip_type_code.upper().find("WDM") != -1  #create condidtion (if the coupler is a wdm)
 					
-					if is_10waywdm or (not is_10waywdm and is_wdm and entity_list[a].sequence==3):
-						if splice_case.is_class("SPLICE_CASE"):
+					if is_10waywdm or (not is_10waywdm and is_wdm and entity_list[a].sequence==3): #if the coupler is a wdm10way OR is not a wdm10way but is a wdm and the entity has sequence = 3
+						if splice_case.is_class("SPLICE_CASE"): # if splice_case is a splice case then
 							osp_mux = addedInJob(ent2,"OSP Mux")+": "+checkValue(coupler.fdm_equip_name) + " ; " + checkValue(coupler.fdm_equip_type_code) + " ; " + checkValue(splice_case.fdm_nh_location) + " ; " + checkValue(splice_case.fdm_designation) + " ; " + \
-										checkValue(splice_case.fdm_address1) + " " + checkValue(splice_case.fdm_town) + " " + checkValue(splice_case.fdm_zipcode)
+										checkValue(splice_case.fdm_address1) + " " + checkValue(splice_case.fdm_town) + " " + checkValue(splice_case.fdm_zipcode) #get the information from the mux, coupler and splice case and put it into osp_mux
 							break
 
-			trace_Report[customer_site_indx+8] = str(a_end_osp_cable)
-			trace_Report[headend_site_indx+8] = str(z_end_osp_cable)
-			trace_Report[9] = str(osp_mux)
+			trace_Report[customer_site_indx+8] = str(a_end_osp_cable) #whcihever index is customer, add 8 to get to the field for osp cable and put the string of a_end_osp_cable
+			trace_Report[headend_site_indx+8] = str(z_end_osp_cable)  #whcihever index is headend, add 8 to get to the field for osp cable and put the string of z_end_osp_cable
+			trace_Report[9] = str(osp_mux) #add the string for osp mux into the 9th attribute in the trace report
 
 			
 			flag = True
