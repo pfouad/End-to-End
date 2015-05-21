@@ -575,28 +575,28 @@ def main():
 					else: # if they are both not empty then
 						c = 0
 						while len(r)!=len(report_merged[counter]): #do while the length of current report equipment name and merged report equipment name are not equal
-							if len(r) < len(report_merged[counter]):
-								r.insert(c,report_merged[counter][c])
-							elif len(r) > len(report_merged[counter]):
-								report_merged[counter].insert(c,r[c])
+							if len(r) < len(report_merged[counter]): #if the length of r is less than the length of the report merged then
+								r.insert(c,report_merged[counter][c]) #insert report merged[counter] at index c into r at index c
+							elif len(r) > len(report_merged[counter]): #if the length of r is greater than report merged then
+								report_merged[counter].insert(c,r[c])  #insert r at index c into report merged at index c 
 								
-							c = c+1
+							c = c+1 #increase c
 							
 						for i in r:
-							indx = r.index(i)
+							indx = r.index(i) #get the index of r where i occurs        
 							#if len(report_merged[counter])<indx+1:
 							#	report_merged[counter].append(r[indx])
 								
-							if report_merged[counter][indx] != r[indx]:
-								tuple = r[indx].partition(": ")
-								report_merged[counter][indx] = report_merged[counter][indx]+ "\n\n"+ tuple[2] 
-				else:
-					if report_merged[counter] != r:
-						report_merged[counter] = report_merged[counter] + " \n\n " +r
-				counter = counter+1
+							if report_merged[counter][indx] != r[indx]: #if the index does not point to the same thing then
+								tuple = r[indx].partition(": ") # partition the indexed item into a 3 tuple (before seperator, seperator, after seperator)
+								report_merged[counter][indx] = report_merged[counter][indx]+ "\n\n"+ tuple[2] #add the seperator to the end of the indexed item in report_merged[counter]
+				else: # if counter is anything else other than 7 or 17 (not equipment names) then
+					if report_merged[counter] != r: #if current report merged and r are not equal then
+						report_merged[counter] = report_merged[counter] + " \n\n " +r  # add r to report_merged[counter]
+				counter = counter+1 #increase counter
 					
 		trace_Reports = []
-		trace_Reports.append(report_merged)
+		trace_Reports.append(report_merged) #put reports_merged in trace_Reports
 
 	# for report in trace_Reports:
 		# counter = 0
