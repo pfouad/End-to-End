@@ -439,11 +439,11 @@ def main():
 			add_a_end = True   #if both of these are true then add customer and headend locations
 			add_z_end = True
 			
-			if z_end_address == a_end_address: #if the trace is within the same building and
-				if z_end_type.upper() == "CUSTOMER": # if z end is the customer end
-					add_a_end=False    #dont add the a side
-				else:        #otherwise
-					add_z_end=False   #don't add z end
+			#if z_end_address == a_end_address: #if the trace is within the same building and
+			#	if z_end_type.upper() == "CUSTOMER": # if z end is the customer end
+			#		add_a_end=False    #dont add the a side
+			#	else:        #otherwise
+			#		add_z_end=False   #don't add z end
 					
 					
 			#check for z_end_equip ending with multi-fiber cable
@@ -456,7 +456,7 @@ def main():
 				if z_end_equip[len(z_end_equip)-1].find("Multi-Fiber") != -1:
 					z_end_equip.pop(len(z_end_equip)-1)
 
-			if add_a_end: #if the add a end flag is true then add 
+			if add_z_end: #if the add a end flag is true then add 
 				trace_Report[headend_site_indx] = str(z_end_nh)
 				trace_Report[headend_site_indx+1] = str(z_end_name)
 				trace_Report[headend_site_indx+2] = str(z_end_clli)
@@ -466,7 +466,7 @@ def main():
 				trace_Report[headend_site_indx+6] = str(z_end_isp_design)
 				trace_Report[headend_site_indx+7] = z_end_equip #z_end_osp_design
 			
-			if add_z_end:
+			if add_a_end:
 				trace_Report[customer_site_indx] = str(a_end_nh)
 				trace_Report[customer_site_indx+1] = str(a_end_name)
 				trace_Report[customer_site_indx+2] = str(a_end_clli)
