@@ -14,7 +14,7 @@ import win32com.client
 from win32com.client import constants
 
 # Two lines below generated from the command:
-# python makepy.py -i VISLIB.DLL
+#python makepy.py -i VISLIB.DLL
 from win32com.client import gencache
 gencache.EnsureModule('{00021A98-0000-0000-C000-000000000046}', 0, 4, 11)
 #Test
@@ -125,8 +125,8 @@ def main():
 		#===========================================================================================================================
 		def storeTraceResult(node,direction,parent):
 			entity_list.append(node) #append the nodes to the end of the entity list
-		#result.trace_tree.applyBidirectional(core.tdm.trace.TraceNode.printCallback, walk_type = "bidirectional")
-		#print "----------"
+		result.trace_tree.applyBidirectional(core.tdm.trace.TraceNode.printCallback, walk_type = "bidirectional")
+		print "----------"
 		result.trace_tree.applyBidirectional(storeTraceResult) #traverse the trace tree in both directions
 
 		if len(entity_list)>1: #if the length of the entity list is more than 1 then
@@ -525,18 +525,18 @@ def main():
 			direction = -1
 			
 			if trace_Report[0] == trace_Report[10] and trace_Report[0].find("ISP_BUILDING")==-1: #if a site and z siet are equal and if a site is an isp building then make the flag false (don't add the trace)
-				flag = False
+				flag = True
 			else: #if the trace is not within the same building then
 				for r in trace_Reports:  #for each report in trace report
 					cond1 = r[6] == trace_Report[6] and r[16] == trace_Report[16]#end equip
-					#cond2 = r[6] == trace_Report[16] and r[16] == trace_Report[6]#end quip
-					#cond3 = r[0] == trace_Report[0] and r[10] == trace_Report[10]#site
-					#cond4 = r[0] == trace_Report[10] and r[10] == trace_Report[0]#site
+					cond2 = r[6] == trace_Report[16] and r[16] == trace_Report[6]#end quip
+					cond3 = r[0] == trace_Report[0] and r[10] == trace_Report[10]#site
+					cond4 = r[0] == trace_Report[10] and r[10] == trace_Report[0]#site
 					cond5 = r[19] == trace_Report[19]
 					
 					if cond5: #if the master circuit is the same between the rth trace report and the current one
-						#if cond3 or cond4: #if the sites are the same  between the rth trace report and the current one
-							if cond1: #or cond2: #if the equipment has the same name then don't add the trace
+						if cond3 or cond4: #if the sites are the same  between the rth trace report and the current one
+							if cond1 or cond2: #if the equipment has the same name then don't add the trace
 								flag=False
 								break     
 							elif len(trace_Report[6])>len(r[6]) or len(trace_Report[16])>len(r[16]): #if the name of the equipment in the current trace is longer on either end then set direction and don't append the trace 
@@ -556,7 +556,7 @@ def main():
 			if flag: #if flag is not false then append the trace report
 				trace_Reports.append(trace_Report)
 
-	#print len(trace_Reports)
+	print len(trace_Reports)
 	#Merge Rx & Tx
 	report_merged = []
 	if len(master_circuits)>1 and len(trace_Reports)>1: # if the length of both master circuits and trace reports are greater than 1 then
@@ -598,11 +598,11 @@ def main():
 		trace_Reports = []
 		trace_Reports.append(report_merged) #put reports_merged in trace_Reports
 
-	# for report in trace_Reports:
-		# counter = 0
-		# for r in report:
-			# print trace_Reports_Desc[counter]+ ": "+str(r)
-			# counter = counter+1
+	for report in trace_Reports:
+		 counter = 0
+		 for r in report:
+		    print trace_Reports_Desc[counter]+ ": "+str(r)
+		    counter = counter+1
 
 
 	return trace_Reports
