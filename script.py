@@ -92,25 +92,25 @@ def main():
 	trace_Reports_Desc = []
 	master_circuits = []
 
-	trace_Reports_Desc.append("Customer Site")
-	trace_Reports_Desc.append("Customer Site name")
-	trace_Reports_Desc.append("Customer Site CLLI")
-	trace_Reports_Desc.append("Customer Site type")
-	trace_Reports_Desc.append("Customer Site location")
-	trace_Reports_Desc.append("Customer Site address")
-	trace_Reports_Desc.append("Customer Site End Equip")
-	trace_Reports_Desc.append("Customer Site Equip")
-	trace_Reports_Desc.append("Customer Site OSP Fiber Cable")
+	trace_Reports_Desc.append("A Site")
+	trace_Reports_Desc.append("A Site name")
+	trace_Reports_Desc.append("A Site CLLI")
+	trace_Reports_Desc.append("A Site type")
+	trace_Reports_Desc.append("A Site location")
+	trace_Reports_Desc.append("A Site address")
+	trace_Reports_Desc.append("A Site End Equip")
+	trace_Reports_Desc.append("A Site Equip")
+	trace_Reports_Desc.append("A Site OSP Fiber Cable")
 	trace_Reports_Desc.append("OSP De(Mux)")
-	trace_Reports_Desc.append("Headend")
-	trace_Reports_Desc.append("Headend name")
-	trace_Reports_Desc.append("Headend CLLI")
-	trace_Reports_Desc.append("Headend type")
-	trace_Reports_Desc.append("Headend location")
-	trace_Reports_Desc.append("Headend address")
-	trace_Reports_Desc.append("Headend End Equip")
-	trace_Reports_Desc.append("Headend Equip")
-	trace_Reports_Desc.append("Headend OSP Fiber Cable")
+	trace_Reports_Desc.append("Z")
+	trace_Reports_Desc.append("Z name")
+	trace_Reports_Desc.append("Z CLLI")
+	trace_Reports_Desc.append("Z type")
+	trace_Reports_Desc.append("Z location")
+	trace_Reports_Desc.append("Z address")
+	trace_Reports_Desc.append("Z End Equip")
+	trace_Reports_Desc.append("Z Equip")
+	trace_Reports_Desc.append("Z OSP Fiber Cable")
 	trace_Reports_Desc.append("Master Circuit Name")
 	trace_Reports_Desc.append("Job Name")
 	trace_Reports_Desc.append("Job Owner")
@@ -148,7 +148,8 @@ def main():
 						
 				if master_circuit is None:   #if there is no master circuit then
 					master_circuit = circuit_state.fdm_ringmaster_fk   #set the master circuit to the circuit ID in the circuit state
-				if master_circuit:   #if there is a master circuit then
+
+			    if master_circuit:   #if there is a master circuit then
 						mc = str(master_circuit.fdm_ringmaster_name) # set mc = to the ring name (CLFI) after making it a string
 						trace_Report[19] = mc #put the master circuit ID into attribute 19 in the trace report
 						if master_circuits.count(mc)==0 and mc is not None and len(mc)>0: #if there are no master circuits and mc is not empty and the length of mc is greater than 0 then
@@ -174,8 +175,8 @@ def main():
 			correct_order = True
 			first_port = None
 			
-			customer_site_indx = 0
-			headend_site_indx = 10
+			A_site_indx = 0
+			Z_site_indx = 10
 
 			for i in range(len(entity_list)): #loop through the entity list
 			
@@ -183,7 +184,7 @@ def main():
 				
 				if ent2.is_class("ISP_PORT"): #if the current entity is an ISP_PORT
 				
-					#print str(entity_list[i].entity)+ " : depth("+ str(entity_list[i].depth)+"), branch("+str(entity_list[i].branch_number)+")"
+					print str(entity_list[i].entity)+ " : depth("+ str(entity_list[i].depth)+"), branch("+str(entity_list[i].branch_number)+")"
 				
 					if first_port is None: #and if the first port has not yet been found then
 						first_port = ent2  #make the ith entity the first port
@@ -300,12 +301,12 @@ def main():
 			a_end_location = a_end_nh.fdm_nh_location
 			# print ("A/Z ends points for Master Circuit->",master_circuit)
 
-			if a_end_type.lower() == "headend":
-				customer_site_indx = 10
-				headend_site_indx = 0
-			elif a_end_type.lower() == "customer":
-				customer_site_indx = 0
-				headend_site_indx = 10
+			if a_end_type.lower() == "Z":
+				A_site_indx = 10
+				Z_site_indx = 0
+			elif a_end_type.lower() == "A":
+				A_site_indx = 0
+				Z_site_indx = 10
 		
 
 			z_end_isp_design = ""
@@ -436,11 +437,11 @@ def main():
 			z_end_location = z_end_nh.fdm_nh_location
 			
 			#check a/z end addresses
-			add_a_end = True   #if both of these are true then add customer and headend locations
+			add_a_end = True   #if both of these are true then add A and Z locations
 			add_z_end = True
 			
 			#if z_end_address == a_end_address: #if the trace is within the same building and
-			#	if z_end_type.upper() == "CUSTOMER": # if z end is the customer end
+			#	if z_end_type.upper() == "A": # if z end is the A end
 			#		add_a_end=False    #dont add the a side
 			#	else:        #otherwise
 			#		add_z_end=False   #don't add z end
@@ -457,24 +458,24 @@ def main():
 					z_end_equip.pop(len(z_end_equip)-1)
 
 			if add_z_end: #if the add a end flag is true then add 
-				trace_Report[headend_site_indx] = str(z_end_nh)
-				trace_Report[headend_site_indx+1] = str(z_end_name)
-				trace_Report[headend_site_indx+2] = str(z_end_clli)
-				trace_Report[headend_site_indx+3] = str(z_end_type)
-				trace_Report[headend_site_indx+4] = str(z_end_location)
-				trace_Report[headend_site_indx+5] = str(z_end_address)
-				trace_Report[headend_site_indx+6] = str(z_end_isp_design)
-				trace_Report[headend_site_indx+7] = z_end_equip #z_end_osp_design
+				trace_Report[Z_site_indx] = str(z_end_nh)
+				trace_Report[Z_site_indx+1] = str(z_end_name)
+				trace_Report[Z_site_indx+2] = str(z_end_clli)
+				trace_Report[Z_site_indx+3] = str(z_end_type)
+				trace_Report[Z_site_indx+4] = str(z_end_location)
+				trace_Report[Z_site_indx+5] = str(z_end_address)
+				trace_Report[Z_site_indx+6] = str(z_end_isp_design)
+				trace_Report[Z_site_indx+7] = z_end_equip #z_end_osp_design
 			
 			if add_a_end:
-				trace_Report[customer_site_indx] = str(a_end_nh)
-				trace_Report[customer_site_indx+1] = str(a_end_name)
-				trace_Report[customer_site_indx+2] = str(a_end_clli)
-				trace_Report[customer_site_indx+3] = str(a_end_type)
-				trace_Report[customer_site_indx+4] = str(a_end_location)
-				trace_Report[customer_site_indx+5] = str(a_end_address)
-				trace_Report[customer_site_indx+6] = str(a_end_isp_design)
-				trace_Report[customer_site_indx+7] = a_end_equip #a_end_osp_design
+				trace_Report[A_site_indx] = str(a_end_nh)
+				trace_Report[A_site_indx+1] = str(a_end_name)
+				trace_Report[A_site_indx+2] = str(a_end_clli)
+				trace_Report[A_site_indx+3] = str(a_end_type)
+				trace_Report[A_site_indx+4] = str(a_end_location)
+				trace_Report[A_site_indx+5] = str(a_end_address)
+				trace_Report[A_site_indx+6] = str(a_end_isp_design)
+				trace_Report[A_site_indx+7] = a_end_equip #a_end_osp_design
 						
 			osp_mux = ""
 			#iterate through OSP equipment
@@ -515,8 +516,8 @@ def main():
 										checkValue(splice_case.fdm_address1) + " " + checkValue(splice_case.fdm_town) + " " + checkValue(splice_case.fdm_zipcode) #get the information from the mux, coupler and splice case and put it into osp_mux
 							break
 
-			trace_Report[customer_site_indx+8] = str(a_end_osp_cable) #whcihever index is customer, add 8 to get to the field for osp cable and put the string of a_end_osp_cable
-			trace_Report[headend_site_indx+8] = str(z_end_osp_cable)  #whcihever index is headend, add 8 to get to the field for osp cable and put the string of z_end_osp_cable
+			trace_Report[A_site_indx+8] = str(a_end_osp_cable) #whcihever index is A, add 8 to get to the field for osp cable and put the string of a_end_osp_cable
+			trace_Report[Z_site_indx+8] = str(z_end_osp_cable)  #whcihever index is Z, add 8 to get to the field for osp cable and put the string of z_end_osp_cable
 			trace_Report[9] = str(osp_mux) #add the string for osp mux into the 9th attribute in the trace report
 
 			
@@ -654,7 +655,7 @@ class DynamicSchemaGenerator:
 			filename = "\\".join(filename.split('\\')[:-1]) + "\\dynamic.vst"
 			doc = appVisio.Documents.Add(filename)
 			self.doc=doc
-			self.stencilShapeList = appVisio.Documents("RBS_Stencil.vss")
+			self.stencilShapeList = appVisio.Documents("Stencil2.vss")
 			self.connectorMaster = appVisio.Application.ConnectorToolDataObject
 			self.page = doc.Pages.Item(1)
 		
@@ -680,14 +681,14 @@ class DynamicSchemaGenerator:
 			
 			
 			# --------------------
-			# left column, headend
+			# left column, Z
 			
 			# put the outside cable, if there
-			self.left["connectionText"] = schemaData[0].HeadendOspFiberCable
+			self.left["connectionText"] = schemaData[0].ZOspFiberCable
 			
 			# put all other site equipment
-			for i in reversed(range(0, len(schemaData[0].HeadendEquip))):
-				tuple = schemaData[0].HeadendEquip[i].partition(": ")
+			for i in reversed(range(0, len(schemaData[0].ZEquip))):
+				tuple = schemaData[0].ZEquip[i].partition(": ")
 				
 				# if can't get type from string use cable (blank icon)
 				if (len(tuple[2]) > 0):
@@ -696,8 +697,8 @@ class DynamicSchemaGenerator:
 					self._placeItem(self.left, "Unknown", tuple[0])
 			
 			# put the end equipment
-			if (schemaData[0].HeadendEndEquip != None and schemaData[0].HeadendEndEquip != ""):
-				tuple = schemaData[0].HeadendEndEquip.partition(": ")
+			if (schemaData[0].ZEndEquip != None and schemaData[0].ZEndEquip != ""):
+				tuple = schemaData[0].ZEndEquip.partition(": ")
 				if tuple[0]== 'End Equipment':
 					self._placeItem(self.left, "Router", tuple[2])
 				else:
@@ -705,14 +706,14 @@ class DynamicSchemaGenerator:
 			
 			
 			# ---------------------
-			# right column, customer
+			# right column, A
 			
 			# put the outside cable, if there
-			self.right["connectionText"] = schemaData[0].CustomerSiteOspFiberCable
+			self.right["connectionText"] = schemaData[0].ASiteOspFiberCable
 			
 			# put all other site equipment
-			for i in reversed(range(0, len(schemaData[0].CustomerSiteEquip))):
-				tuple = schemaData[0].CustomerSiteEquip[i].partition(": ")
+			for i in reversed(range(0, len(schemaData[0].ASiteEquip))):
+				tuple = schemaData[0].ASiteEquip[i].partition(": ")
 				
 				# if can't get type from string use cable (blank icon)
 				if (len(tuple[2]) > 0):
@@ -721,8 +722,8 @@ class DynamicSchemaGenerator:
 					self._placeItem(self.right, "Unknown", tuple[0])
 			
 			# put the end equipment
-			if (schemaData[0].CustomerSiteEndEquip != None and schemaData[0].CustomerSiteEndEquip != ""):
-				tuple = schemaData[0].CustomerSiteEndEquip.partition(": ")
+			if (schemaData[0].ASiteEndEquip != None and schemaData[0].ASiteEndEquip != ""):
+				tuple = schemaData[0].ASiteEndEquip.partition(": ")
 				if tuple[0]== 'End Equipment':
 					self._placeItem(self.right, "Media Converter", tuple[2])
 				else:
@@ -743,9 +744,9 @@ class DynamicSchemaGenerator:
 				elif oleObject.Name == "lbl_circuit_id":
 					oleObject.Caption = schemaData[0].MasterCircuitName
 				elif oleObject.Name == "lbl_cust_addr":
-					oleObject.Caption = schemaData[0].CustomerSiteName + " ; " + schemaData[0].CustomerSiteCLLI + " ; " +schemaData[0].CustomerSiteAddress
+					oleObject.Caption = schemaData[0].ASiteName + " ; " + schemaData[0].ASiteCLLI + " ; " +schemaData[0].ASiteAddress
 				elif oleObject.Name == "lbl_head_addr":
-					oleObject.Caption = schemaData[0].HeadendName + " ; " + schemaData[0].HeadendCLLI + " ; " +schemaData[0].HeadendAddress
+					oleObject.Caption = schemaData[0].ZName + " ; " + schemaData[0].ZCLLI + " ; " +schemaData[0].ZAddress
 					
 					
 		except Exception as e:
@@ -833,25 +834,25 @@ class DynamicSchemaGenerator:
 # end of DynamicSchemaGenerator class
 
 class SchemaData:
-	CustomerSite = None
-	CustomerSiteName = None
-	CustomerSiteCLLI = None
-	CustomerSiteType = None
-	CustomerSiteLocation = None
-	CustomerSiteAddress = None
-	CustomerSiteEndEquip = None
-	CustomerSiteEquip = None
-	CustomerSiteOspFiberCable = None
+	ASite = None
+	ASiteName = None
+	ASiteCLLI = None
+	ASiteType = None
+	ASiteLocation = None
+	ASiteAddress = None
+	ASiteEndEquip = None
+	ASiteEquip = None
+	ASiteOspFiberCable = None
 	OspMux = None
-	HeadendSite = None
-	HeadendName = None
-	HeadendCLLI = None
-	HeadendType = None
-	HeadendLocation = None
-	HeadendAddress = None
-	HeadendEndEquip = None
-	HeadendEquip = None
-	HeadendOspFiberCable = None
+	ZSite = None
+	ZName = None
+	ZCLLI = None
+	ZType = None
+	ZLocation = None
+	ZAddress = None
+	ZEndEquip = None
+	ZEquip = None
+	ZOspFiberCable = None
 	MasterCircuitName = None
 	JobName = None
 	JobOwner = None
@@ -862,25 +863,25 @@ class SchemaData:
 		for i in range(0, len(dataArray)):
 			data = SchemaData()
 			
-			data.CustomerSite = dataArray[i][0]
-			data.CustomerSiteName = dataArray[i][1]
-			data.CustomerSiteCLLI = dataArray[i][2]
-			data.CustomerSiteType = dataArray[i][3]
-			data.CustomerSiteLocation = dataArray[i][4]
-			data.CustomerSiteAddress = dataArray[i][5]
-			data.CustomerSiteEndEquip = dataArray[i][6]
-			data.CustomerSiteEquip = dataArray[i][7]
-			data.CustomerSiteOspFiberCable = dataArray[i][8]
+			data.ASite = dataArray[i][0]
+			data.ASiteName = dataArray[i][1]
+			data.ASiteCLLI = dataArray[i][2]
+			data.ASiteType = dataArray[i][3]
+			data.ASiteLocation = dataArray[i][4]
+			data.ASiteAddress = dataArray[i][5]
+			data.ASiteEndEquip = dataArray[i][6]
+			data.ASiteEquip = dataArray[i][7]
+			data.ASiteOspFiberCable = dataArray[i][8]
 			data.OspMux = dataArray[i][9]
-			data.HeadendSite = dataArray[i][10]
-			data.HeadendName = dataArray[i][11]
-			data.HeadendCLLI = dataArray[i][12]
-			data.HeadendType = dataArray[i][13]
-			data.HeadendLocation = dataArray[i][14]
-			data.HeadendAddress = dataArray[i][15]
-			data.HeadendEndEquip = dataArray[i][16]
-			data.HeadendEquip = dataArray[i][17]
-			data.HeadendOspFiberCable = dataArray[i][18]
+			data.ZSite = dataArray[i][10]
+			data.ZName = dataArray[i][11]
+			data.ZCLLI = dataArray[i][12]
+			data.ZType = dataArray[i][13]
+			data.ZLocation = dataArray[i][14]
+			data.ZAddress = dataArray[i][15]
+			data.ZEndEquip = dataArray[i][16]
+			data.ZEquip = dataArray[i][17]
+			data.ZOspFiberCable = dataArray[i][18]
 			data.MasterCircuitName = dataArray[i][19]
 			data.JobName = dataArray[i][20]
 			data.JobOwner = dataArray[i][21]
