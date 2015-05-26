@@ -149,7 +149,7 @@ def main():
 				if master_circuit is None:   #if there is no master circuit then
 					master_circuit = circuit_state.fdm_ringmaster_fk   #set the master circuit to the circuit ID in the circuit state
 
-			    if master_circuit:   #if there is a master circuit then
+				if master_circuit:   #if there is a master circuit then
 						mc = str(master_circuit.fdm_ringmaster_name) # set mc = to the ring name (CLFI) after making it a string
 						trace_Report[19] = mc #put the master circuit ID into attribute 19 in the trace report
 						if master_circuits.count(mc)==0 and mc is not None and len(mc)>0: #if there are no master circuits and mc is not empty and the length of mc is greater than 0 then
@@ -214,7 +214,7 @@ def main():
 								#found true end
 								if ent2 != first_port and entity_list[i].branch_number==1: #if ent2 is not the first port and the ith element in the entity list's branch # = 1 then
 									correct_order=False #the entities are not in the correct order
-									         #add all information for the isp a end
+											 #add all information for the isp a end
 								a_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1
 
 						except Exception as e:
@@ -448,7 +448,7 @@ def main():
 					
 					
 			#check for z_end_equip ending with multi-fiber cable
-            #checking both ends if the last thing appended was a multifiber cable
+			#checking both ends if the last thing appended was a multifiber cable
 			if len(a_end_equip)>0:
 				if a_end_equip[len(a_end_equip)-1].find("Multi-Fiber") != -1:
 					a_end_equip.pop(len(a_end_equip)-1)
@@ -655,7 +655,7 @@ class DynamicSchemaGenerator:
 			filename = "\\".join(filename.split('\\')[:-1]) + "\\dynamic.vst"
 			doc = appVisio.Documents.Add(filename)
 			self.doc=doc
-			self.stencilShapeList = appVisio.Documents("Stencil2.vss")
+			self.stencilShapeList = appVisio.Documents("RBS_Stencil.vss")
 			self.connectorMaster = appVisio.Application.ConnectorToolDataObject
 			self.page = doc.Pages.Item(1)
 		
@@ -668,10 +668,10 @@ class DynamicSchemaGenerator:
 			if schemaData[0].OspMux != "" and schemaData[0].OspMux is not None:
 				tuple = schemaData[0].OspMux.partition(": ")
 					
-				shape = self.page.Drop(self.stencilShapeList.Masters(tuple[0]), 8, 3)
+				shape = self.page.Drop(self.stencilShapeList.Masters("Nortel OM6500"), 8, 3)
 				shape.Cells("Prop.Row_1").Formula = '"' + tuple[2] + '"'
 			else:
-				shape = self.page.Drop(self.stencilShapeList.Masters("Empty"), 8, 3)
+				shape = self.page.Drop(self.stencilShapeList.Masters("Nortel OM6500"), 8, 3)
 			
 			self.left["firstShape"] = shape
 			self.left["previousShape"] = shape
@@ -702,7 +702,7 @@ class DynamicSchemaGenerator:
 				if tuple[0]== 'End Equipment':
 					self._placeItem(self.left, "Router", tuple[2])
 				else:
-					self._placeItem(self.left, "Router_new", tuple[2])
+					self._placeItem(self.left, "Router", tuple[2])
 			
 			
 			# ---------------------
@@ -717,7 +717,7 @@ class DynamicSchemaGenerator:
 				
 				# if can't get type from string use cable (blank icon)
 				if (len(tuple[2]) > 0):
-					self._placeItem(self.right, tuple[0], tuple[2])
+					self._placeItem(self.right, "Nortel OM6500", tuple[2])
 				else:
 					self._placeItem(self.right, "Unknown", tuple[0])
 			
@@ -727,7 +727,7 @@ class DynamicSchemaGenerator:
 				if tuple[0]== 'End Equipment':
 					self._placeItem(self.right, "Media Converter", tuple[2])
 				else:
-					self._placeItem(self.right, "Media Converter_new", tuple[2])
+					self._placeItem(self.right, "Media Converter", tuple[2])
 			
 			
 			#populate form
