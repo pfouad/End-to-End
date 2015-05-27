@@ -101,8 +101,8 @@ def main():
 	trace_Reports_Desc.append("A Site End Equip")
 	trace_Reports_Desc.append("A Site Equip")
 	trace_Reports_Desc.append("A Site OSP Fiber Cable")
-	trace_Reports_Desc.append("OSP De(Mux)")
-	trace_Reports_Desc.append("Z")
+	trace_Reports_Desc.append("Usage")
+	trace_Reports_Desc.append("Z Site")
 	trace_Reports_Desc.append("Z name")
 	trace_Reports_Desc.append("Z CLLI")
 	trace_Reports_Desc.append("Z type")
@@ -203,19 +203,19 @@ def main():
 						try:
 							equip_type_details = equip_dict.values(parent.ISPA_EQUIP_DICT_FK.NETWORK_KEY)  #get the details of the type of equipment that is ent2
 							desc = checkValue(equip_type_details.DESC1) #get the description of the chassis from the dictionary
+							a_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1
+							#if desc.upper().find("MULTIPLEXER")!= -1: #if there is the substring MULTIPLEXER in the description of the chassis then
+							#	#found mux! Now get the information of the mux shelf
+							#	mux = checkValue(equip_type_details.MODEL) + " ; " + desc + " ; "+ checkValue(parent.ISPA_SECTION_F_CODE) + " ; "+ checkValue(parent.ISPA_NAME)
 
-							if desc.upper().find("MULTIPLEXER")!= -1: #if there is the substring MULTIPLEXER in the description of the chassis then
-								#found mux! Now get the information of the mux shelf
-								mux = checkValue(equip_type_details.MODEL) + " ; " + desc + " ; "+ checkValue(parent.ISPA_SECTION_F_CODE) + " ; "+ checkValue(parent.ISPA_NAME)
-
-								if a_end_equip.count(addedInJob(parent,"Mux")+": "+mux)==0: #if the parent and the mux were both added in this job then
-									a_end_equip.append(addedInJob(parent,"Mux")+": "+mux)      #add the parent chassis to the a_end_equipment
-							else:
-								#found true end
-								if ent2 != first_port and entity_list[i].branch_number==1: #if ent2 is not the first port and the ith element in the entity list's branch # = 1 then
-									correct_order=False #the entities are not in the correct order
-											 #add all information for the isp a end
-								a_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1
+							#	if a_end_equip.count(addedInJob(parent,"Mux")+": "+mux)==0: #if the parent and the mux were both added in this job then
+							#		a_end_equip.append(addedInJob(parent,"Mux")+": "+mux)      #add the parent chassis to the a_end_equipment
+							#else:
+							#	#found true end
+							if ent2 != first_port and entity_list[i].branch_number==1: #if ent2 is not the first port and the ith element in the entity list's branch # = 1 then
+							    correct_order=False #the entities are not in the correct order
+							#add all information for the isp a end
+							#a_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1
 
 						except Exception as e:
 							#lov conversion not found
@@ -671,7 +671,7 @@ class DynamicSchemaGenerator:
 				shape = self.page.Drop(self.stencilShapeList.Masters("Nortel OM6500"), 8, 3)
 				shape.Cells("Prop.Row_1").Formula = '"' + tuple[2] + '"'
 			else:
-				shape = self.page.Drop(self.stencilShapeList.Masters("Nortel OM6500"), 8, 3)
+				shape = self.page.Drop(self.stencilShapeList.Masters("Empty"), 8, 3)
 			
 			self.left["firstShape"] = shape
 			self.left["previousShape"] = shape
