@@ -340,17 +340,17 @@ def main():
 						try:
 							equip_type_details = equip_dict.values(parent.ISPA_EQUIP_DICT_FK.NETWORK_KEY)
 							desc = checkValue(equip_type_details.DESC1)
-							if desc.upper().find("MULTIPLEXER")!= -1:
-								#found mux
-								mux = checkValue(equip_type_details.MODEL) + " ; " + desc + " ; "+ checkValue(parent.ISPA_SECTION_F_CODE) + " ; "+ checkValue(parent.ISPA_NAME)
-								if z_end_equip.count(addedInJob(parent,"Mux")+": "+mux)==0:
-									z_end_equip.append(addedInJob(parent,"Mux")+": "+mux)
-							else:
-								#found true end
-								if ent2 != first_port and entity_list[r].branch_number==1:
-									correct_order=False
+							#if desc.upper().find("MULTIPLEXER")!= -1:
+							#	#found mux
+							#	mux = checkValue(equip_type_details.MODEL) + " ; " + desc + " ; "+ checkValue(parent.ISPA_SECTION_F_CODE) + " ; "+ checkValue(parent.ISPA_NAME)
+							#	if z_end_equip.count(addedInJob(parent,"Mux")+": "+mux)==0:
+							#		z_end_equip.append(addedInJob(parent,"Mux")+": "+mux)
+							#else:
+							#	#found true end
+							if ent2 != first_port and entity_list[r].branch_number==1:
+								correct_order=False
 									
-								z_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1
+							z_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1
 
 						except Exception as e:
 							#lov conversion not found
@@ -665,13 +665,13 @@ class DynamicSchemaGenerator:
 
 			# add OutsideOspMux, or if it`s missing join 2 sides
 			shape = None
-			if schemaData[0].OspMux != "" and schemaData[0].OspMux is not None:
-				tuple = schemaData[0].OspMux.partition(": ")
+			#if schemaData[0].OspMux != "" and schemaData[0].OspMux is not None:
+			#	tuple = schemaData[0].OspMux.partition(": ")
 					
-				shape = self.page.Drop(self.stencilShapeList.Masters("Nortel OM6500"), 8, 3)
-				shape.Cells("Prop.Row_1").Formula = '"' + tuple[2] + '"'
-			else:
-				shape = self.page.Drop(self.stencilShapeList.Masters("Empty"), 8, 3)
+			#	shape = self.page.Drop(self.stencilShapeList.Masters("Nortel OM6500"), 8, 3)
+			#	shape.Cells("Prop.Row_1").Formula = '"' + tuple[2] + '"'
+			#else:
+			shape = self.page.Drop(self.stencilShapeList.Masters("Empty"), 8, 3)
 			
 			self.left["firstShape"] = shape
 			self.left["previousShape"] = shape
@@ -682,27 +682,50 @@ class DynamicSchemaGenerator:
 			
 			# --------------------
 			# left column, Z
-			
-			# put the outside cable, if there
-			self.left["connectionText"] = schemaData[0].ZOspFiberCable
-			
-			# put all other site equipment
-			for i in reversed(range(0, len(schemaData[0].ZEquip))):
-				tuple = schemaData[0].ZEquip[i].partition(": ")
+			#these two loops are to check if sites are the same, if so then add all relevant equipment to the site (it should loop through all traces)
+			for j in range(0,len(schemaData)):
+				for k in range(1,len(schemaData)):
+				# put the outside cable, if there
+					#self.left["connectionText"] = schemaData[j].ZOspFiberCable
+					if schemaData[j].ASite == schemaData[j].ZSite:
+						for i in reversed(range(0, len(schemaData[j].ASiteEndEquip))):
+							tupleA = schemaData[j].ASiteEndEquip[i].partition(": ")
+
+							if(len(tupleA[2]) > 0):
+								self._placeItem(self.left, tupleA[0], tupleA[2])
+							else:
+								self._placeItem(self.left, "Unknown", tupleA[0])
+						# put all other site equipment
+						for i in reversed(range(0, len(schemaData[j].ZEquip))):
+							tupleZ = schemaData[j].ZEquip[i].partition(": ")
 				
-				# if can't get type from string use cable (blank icon)
-				if (len(tuple[2]) > 0):
-					self._placeItem(self.left, tuple[0], tuple[2])
-				else:
-					self._placeItem(self.left, "Unknown", tuple[0])
-			
-			# put the end equipment
-			if (schemaData[0].ZEndEquip != None and schemaData[0].ZEndEquip != ""):
-				tuple = schemaData[0].ZEndEquip.partition(": ")
-				if tuple[0]== 'End Equipment':
-					self._placeItem(self.left, "Router", tuple[2])
-				else:
-					self._placeItem(self.left, "Router", tuple[2])
+							# if can't get type from string use cable (blank icon)
+							if (len(tupleZ[2]) > 0):
+								self._placeItem(self.left, tupleZ[0], tupleZ[2])
+							else:
+								self._placeItem(self.left, "Unknown", tupleZ[0])
+						if (schemaData[j].ASiteEndEquip != None and schemaData[j].ASiteEndEquip != ""):
+							tupleA = schemaData[j].ASiteEndEquip[i].partition(": ")
+							if tupleA[0]== 'End Equipment':
+								self._placeItem(self.left, "Router", tupleA[2])
+							else:
+								self._placeItem(self.left, "Router", tupleA[2])
+						# put the end equipment
+						if (schemaData[j].ZEndEquip != None and schemaData[j].ZEndEquip != ""):
+							tupleZ = schemaData[j].ZEndEquip[i].partition(": ")
+							if tupleZ[0]== 'End Equipment':
+								self._placeItem(self.left, "Router", tupleZ[2])
+							else:
+								self._placeItem(self.left, "Router", tupleZ[2])
+					if j != k:
+						if schemaData[j].ASite == schemaData[k].ASite:
+							for i in reversed(range(0, len(schemaData[j].ASiteEndEquip))):
+								tupleA = schemaData[j].ASiteEndEquip[i].partition(": ")
+
+							if(len(tupleA[2]) > 0):
+								self._placeItem(self.left, tupleA[0], tupleA[2])
+							else:
+								self._placeItem(self.left, "Unknown", tupleA[0])
 			
 			
 			# ---------------------
@@ -717,17 +740,17 @@ class DynamicSchemaGenerator:
 				
 				# if can't get type from string use cable (blank icon)
 				if (len(tuple[2]) > 0):
-					self._placeItem(self.right, "Nortel OM6500", tuple[2])
+					self._placeItem(self.right, "Router", tuple[2])
 				else:
-					self._placeItem(self.right, "Unknown", tuple[0])
+					self._placeItem(self.right, "Router", tuple[0])
 			
 			# put the end equipment
 			if (schemaData[0].ASiteEndEquip != None and schemaData[0].ASiteEndEquip != ""):
 				tuple = schemaData[0].ASiteEndEquip.partition(": ")
 				if tuple[0]== 'End Equipment':
-					self._placeItem(self.right, "Media Converter", tuple[2])
+					self._placeItem(self.right, "Router", tuple[2])
 				else:
-					self._placeItem(self.right, "Media Converter", tuple[2])
+					self._placeItem(self.right, "Router", tuple[2])
 			
 			
 			#populate form
@@ -872,7 +895,7 @@ class SchemaData:
 			data.ASiteEndEquip = dataArray[i][6]
 			data.ASiteEquip = dataArray[i][7]
 			data.ASiteOspFiberCable = dataArray[i][8]
-			data.OspMux = dataArray[i][9]
+			data.Usage = dataArray[i][9]
 			data.ZSite = dataArray[i][10]
 			data.ZName = dataArray[i][11]
 			data.ZCLLI = dataArray[i][12]
@@ -886,7 +909,7 @@ class SchemaData:
 			data.JobName = dataArray[i][20]
 			data.JobOwner = dataArray[i][21]
 			data.Date = dataArray[i][22]
-			result.append(data)
+		result.append(data)
 		return result
 #end of SchemaData class
 
