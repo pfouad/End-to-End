@@ -116,7 +116,7 @@ def main():
 	trace_Reports_Desc.append("Job Owner")
 	trace_Reports_Desc.append("Date")
 
-	
+	#input("Press Enter to contine...")
 	for result in TraceResults().getTraceResults(): #for each result in the trace report
 
 		entity_list = []
@@ -618,7 +618,7 @@ class DynamicSchemaGenerator:
 		self.doc = None
 		self.gap = 1
 	
-		self.left = {"previousShape": None, "firstShape": None, "x": 2, "y": 3.5, "connectionText": None}
+		self.left = {"previousShape": None, "firstShape": None, "x": 4, "y": 3.5, "connectionText": None}
 		self.right = {"previousShape": None, "firstShape": None, "x": 12, "y": 3.5, "connectionText": None}
 	
 	def should_overwrite_file(self, filename):
@@ -665,13 +665,13 @@ class DynamicSchemaGenerator:
 
 			# add OutsideOspMux, or if it`s missing join 2 sides
 			shape = None
-			#if schemaData[0].OspMux != "" and schemaData[0].OspMux is not None:
-			#	tuple = schemaData[0].OspMux.partition(": ")
+			#if schemaData[0][0].OspMux != "" and schemaData[0][0].OspMux is not None:
+			#	tuple = schemaData[0][0].OspMux.partition(": ")
 					
-			#	shape = self.page.Drop(self.stencilShapeList.Masters("Nortel OM6500"), 8, 3)
+			#	shape = self.page.Drop(self.stencilShapeList.Masters("Router"), 8, 3)
 			#	shape.Cells("Prop.Row_1").Formula = '"' + tuple[2] + '"'
 			#else:
-			shape = self.page.Drop(self.stencilShapeList.Masters("Empty"), 8, 3)
+			#shape = self.page.Drop(self.stencilShapeList.Masters("Empty"), 8, 3)
 			
 			self.left["firstShape"] = shape
 			self.left["previousShape"] = shape
@@ -683,211 +683,210 @@ class DynamicSchemaGenerator:
 			# --------------------
 			# left column, Z
 			#these two loops are to check if sites are the same, if so then add all relevant equipment to the site (it should loop through all traces)
-			for j in range(0,len(schemaData)):
-				for k in range(1,len(schemaData)):
+			for j in range(0,len(schemaData[0])):
+				for k in range(0,len(schemaData)):
 				# put the outside cable, if there
 					#self.left["connectionText"] = schemaData[j].ZOspFiberCable
-					if (schemaData[j].ASite == schemaData[j].ZSite) and (j != k):
-						if schemaData[j].ASite == schemaData[j].ZSite:
-							for i in reversed(range(0, len(schemaData[j].ASiteEndEquip))):
-								tupleA = schemaData[j].ASiteEndEquip[i].partition(": ")
-
-							if(len(tupleA[2]) > 0):
-								self._placeItem(self.left, tupleA[0], tupleA[2])
-							else:
-								self._placeItem(self.left, "Unknown", tupleA[0])
-							# put all other site equipment
-							for i in reversed(range(0, len(schemaData[j].ZEquip))):
-								tupleZ = schemaData[j].ZEquip[i].partition(": ")
-				
-								# if can't get type from string use cable (blank icon)
-							if (len(tupleZ[2]) > 0):
-								self._placeItem(self.left, tupleZ[0], tupleZ[2])
-							else:
-								self._placeItem(self.left, "Unknown", tupleZ[0])
-							if (schemaData[j].ASiteEndEquip != None and schemaData[j].ASiteEndEquip != ""):
-								tupleA = schemaData[j].ASiteEndEquip[i].partition(": ")
-								if tupleA[0]== 'End Equipment':
-									self._placeItem(self.left, "Router", tupleA[2])
-								else:
-									self._placeItem(self.left, "Router", tupleA[2])
-							# put the end equipment
-							if (schemaData[j].ZEndEquip != None and schemaData[j].ZEndEquip != ""):
-								tupleZ = schemaData[j].ZEndEquip[i].partition(": ")
-								if tupleZ[0]== 'End Equipment':
-									self._placeItem(self.left, "Router", tupleZ[2])
-								else:
-									self._placeItem(self.left, "Router", tupleZ[2])
-					
-						if schemaData[j].ASite == schemaData[k].ASite:
-							for i in reversed(range(0, len(schemaData[j].ASiteEndEquip))):
-								tupleA = schemaData[j].ASiteEndEquip[i].partition(": ")
-
-							if(len(tupleA[2]) > 0):
-								self._placeItem(self.left, tupleA[0], tupleA[2])
-							else:
-								self._placeItem(self.left, "Unknown", tupleA[0])
-
-							for i in reversed(range(0, len(schemaData[k].ASiteEndEquip))):
-								tupleAk = schemaData[k].ASiteEndEquip[i].partition(": ")
-
-							if(len(tupleAk[2]) > 0):
-								self._placeItem(self.left, tupleAk[0], tupleAk[2])
-							else:
-								self._placeItem(self.left, "Unknown", tupleAk[0])
-
-							if (schemaData[j].ASiteEndEquip != None and schemaData[j].ASiteEndEquip != ""):
-								tupleA = schemaData[j].ASiteEndEquip.partition(": ")
-								if tupleA[0]== 'End Equipment':
-									self._placeItem(self.left, "Router", tupleA[2])
-								else:
-									self._placeItem(self.left, "Router", tupleA[2])
-							if(schemaData[k].ASiteEndEquip != None and schemaData[k].ASiteEndEquip != ""):
-								tupleAk = schemaData[k].ASiteEndEquip.partition(": ")
-								if tupleAk[0] == 'End Equipment':
-									self._placeItem(self.left, "Router",tupleAk[2])
-								else:
-									self._placeItem(self.left, "Router",tupleAk[2])
-						if schemaData[j].ASite == schemaData[k].ZSite:
-							for i in reversed(range(0, len(schemaData[j].ASiteEndEquip))):
-								tupleA = schemaData[j].ASiteEndEquip[i].partition(": ")
-							if(len(tupleA[2]) > 0):
-								self._placeItem(self.left, tupleA[0], tupleA[2])
-							else:
-								self._placeItem(self.left, "Unknown", tupleA[0])
-							for i in reversed(range(0, len(schemaData[k].ZEndEquip))):
-								tupleZ = schemaData[k].ZEndEquip[i].partition(": ")
-
-							if(len(tupleZ[2]) > 0):
-								self._placeItem(self.left, tupleZ[0], tupleZ[2])
-							else:
-								self._placeItem(self.left, "Unknown", tupleZ[0])
-							if (schemaData[j].ASiteEndEquip != None and schemaData[j].ASiteEndEquip != ""):
-								tupleA = schemaData[j].ASiteEndEquip.partition(": ")
-								if tupleA[0]== 'End Equipment':
-									self._placeItem(self.left, "Router", tupleA[2])
-								else:
-									self._placeItem(self.left, "Router", tupleA[2])
-							if (schemaData[k].ZEndEquip != None and schemaData[k].ZEndEquip != ""):
-								tupleZ = schemaData[k].ZEndEquip.partition(": ")
-								if tupleZ[0]== 'End Equipment':
-									self._placeItem(self.left, "Router", tupleZ[2])
-								else:
-									self._placeItem(self.left, "Router", tupleZ[2])
-					if (schemaData[j].ASite != schemaData[j].ZSite) and  (j!=k):
-						for i in reversed(range(0, len(schemaData[j].ASiteEndEquip))):
-							tupleA = schemaData[j].ASiteEndEquip[i].partition(": ")
+					if (schemaData[0][j].ASite == schemaData[0][j].ZSite):
+						#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+						tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+							
 						if(len(tupleA[2]) > 0):
-							self._placeItem(self.left, tupleA[0], tupleA[2])
+							self._placeItem(self.left, "Router", tupleA[2])
 						else:
-							self._placeItem(self.left, "Unknown", tupleA[0])
-						if (schemaData[j].ASiteEndEquip != None and schemaData[j].ASiteEndEquip != ""):
-								tupleA = schemaData[j].ASiteEndEquip.partition(": ")
+							self._placeItem(self.left, " ", tupleA[0])
+						# put all other site equipment
+						#for i in reversed(range(0, len(schemaData[0][j].ZEndEquip))):
+						tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+				
+							# if can't get type from string use cable (blank icon)
+						if (len(tupleZ[2]) > 0):
+							self._placeItem(self.left, "Router", tupleZ[2])
+						else:
+							self._placeItem(self.left, " ", tupleZ[0])
+						if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+							tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+							if tupleA[0]== 'End Equipment':
+								self._placeItem(self.left, "Router", tupleA[2])
+							else:
+								self._placeItem(self.left, " ", tupleA[2])
+						# put the end equipment
+						if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+							tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+							if tupleZ[0]== 'End Equipment':
+								self._placeItem(self.left, "Router", tupleZ[2])
+							else:
+								self._placeItem(self.left, " ", tupleZ[2])
+					
+					if schemaData[0][j].ASite == schemaData[0][k].ASite and j!=k:
+						#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+						tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+
+						if(len(tupleA[2]) > 0):
+							self._placeItem(self.left, "Router", tupleA[2])
+						else:
+							self._placeItem(self.left, " ", tupleA[0])
+
+						#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
+						tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+
+						if(len(tupleAk[2]) > 0):
+							self._placeItem(self.left, "Router", tupleAk[2])
+						else:
+							self._placeItem(self.left, " ", tupleAk[0])
+
+						if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+							tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+							if tupleA[0]== 'End Equipment':
+								self._placeItem(self.left, "Router", tupleA[2])
+							else:
+								self._placeItem(self.left, " ", tupleA[2])
+						if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+							tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+							if tupleAk[0] == 'End Equipment':
+								self._placeItem(self.left, "Router",tupleAk[2])
+							else:
+								self._placeItem(self.left, " ",tupleAk[2])
+					if schemaData[0][j].ASite == schemaData[0][k].ZSite and j!=k:
+						#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+						tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+						if(len(tupleA[2]) > 0):
+							self._placeItem(self.left, "Router", tupleA[2])
+						else:
+							self._placeItem(self.left, " ", tupleA[0])
+						#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
+						tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+
+						if(len(tupleZ[2]) > 0):
+							self._placeItem(self.left, "Router", tupleZ[2])
+						else:
+							self._placeItem(self.left, " ", tupleZ[0])
+						if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+							tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+							if tupleA[0]== 'End Equipment':
+								self._placeItem(self.left, "Router", tupleA[2])
+							else:
+								self._placeItem(self.left, " ", tupleA[2])
+						if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+							tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+							if tupleZ[0]== 'End Equipment':
+								self._placeItem(self.left, "Router", tupleZ[2])
+							else:
+								self._placeItem(self.left, " ", tupleZ[2])
+					if (schemaData[0][j].ASite != schemaData[0][j].ZSite):
+						#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+						tupleA = schemaData[0][j].ASiteEndEquip[i].partition(": ")
+						if(len(tupleA[2]) > 0):
+							self._placeItem(self.left, "Router", tupleA[2])
+						else:
+							self._placeItem(self.left, " ", tupleA[0])
+						if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 								if tupleA[0]== 'End Equipment':
 									self._placeItem(self.left, "Router", tupleA[2])
 								else:
-									self._placeItem(self.left, "Router", tupleA[2])
+									self._placeItem(self.left, " ", tupleA[2])
 						
-						for i in reversed(range(0, len(schemaData[j].ZEquip))):
-							tupleZ = schemaData[j].ZEquip[i].partition(": ")
+						#for i in reversed(range(0, len(schemaData[0][j].ZEquip))):
+						tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
 				
 								# if can't get type from string use cable (blank icon)
-							if (len(tupleZ[2]) > 0):
-								self._placeItem(self.right, tupleZ[0], tupleZ[2])
+						if (len(tupleZ[2]) > 0):
+							self._placeItem(self.right, "Router", tupleZ[2])
+						else:
+							self._placeItem(self.right, " ", tupleZ[0])
+						if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+							tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+							if tupleZ[0]== 'End Equipment':
+								self._placeItem(self.right, "Router", tupleZ[2])
 							else:
-								self._placeItem(self.right, "Unknown", tupleZ[0])
-						if (schemaData[j].ZEndEquip != None and schemaData[j].ZEndEquip != ""):
-								tupleZ = schemaData[j].ZEndEquip[i].partition(": ")
-								if tupleZ[0]== 'End Equipment':
-									self._placeItem(self.right, "Router", tupleZ[2])
-								else:
-									self._placeItem(self.right, "Router", tupleZ[2])
+								self._placeItem(self.right, " ", tupleZ[2])
 
-						if schemaData[j].ASite == schemaData[k].ASite:
-							for i in reversed(range(0, len(schemaData[k].ASiteEndEquip))):
-								tupleAk = schemaData[k].ASiteEndEquip[i].partition(": ")
+						if schemaData[0][j].ASite == schemaData[0][k].ASite and j!=k :
+							#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
+							tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 
 							if(len(tupleAk[2]) > 0):
-								self._placeItem(self.left, tupleAk[0], tupleAk[2])
+								self._placeItem(self.left, "Router", tupleAk[2])
 							else:
-								self._placeItem(self.left, "Unknown", tupleAk[0])
+								self._placeItem(self.left, " ", tupleAk[0])
 
 							
-							if(schemaData[k].ASiteEndEquip != None and schemaData[k].ASiteEndEquip != ""):
-								tupleAk = schemaData[k].ASiteEndEquip.partition(": ")
+							if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 								if tupleAk[0] == 'End Equipment':
 									self._placeItem(self.left, "Router",tupleAk[2])
 								else:
-									self._placeItem(self.left, "Router",tupleAk[2])
-						if schemaData[j].ASite == schemaData[k].ZSite:
+									self._placeItem(self.left, " ",tupleAk[2])
+						if schemaData[0][j].ASite == schemaData[0][k].ZSite and j!=k:
 							
-							for i in reversed(range(0, len(schemaData[k].ZEndEquip))):
-								tupleZ = schemaData[k].ZEndEquip[i].partition(": ")
+							#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
+							tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 
 							if(len(tupleZ[2]) > 0):
-								self._placeItem(self.left, tupleZ[0], tupleZ[2])
+								self._placeItem(self.left, "Router", tupleZ[2])
 							else:
-								self._placeItem(self.left, "Unknown", tupleZ[0])
+								self._placeItem(self.left, " ", tupleZ[0])
 							
-							if (schemaData[k].ZEndEquip != None and schemaData[k].ZEndEquip != ""):
-								tupleZ = schemaData[k].ZEndEquip.partition(": ")
+							if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 								if tupleZ[0]== 'End Equipment':
 									self._placeItem(self.left, "Router", tupleZ[2])
 								else:
-									self._placeItem(self.left, "Router", tupleZ[2])
-						if schemaData[j].ZSite == schemaData[k].ASite:
-							for i in reversed(range(0, len(schemaData[k].ASiteEndEquip))):
-								tupleAk = schemaData[k].ASiteEndEquip[i].partition(": ")
+									self._placeItem(self.left, " ", tupleZ[2])
+						if schemaData[0][j].ZSite == schemaData[0][k].ASite and j!=k:
+							#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
+							tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 
 							if(len(tupleAk[2]) > 0):
-								self._placeItem(self.right, tupleAk[0], tupleAk[2])
+								self._placeItem(self.right, "Router", tupleAk[2])
 							else:
-								self._placeItem(self.right, "Unknown", tupleAk[0])
-							if(schemaData[k].ASiteEndEquip != None and schemaData[k].ASiteEndEquip != ""):
-								tupleAk = schemaData[k].ASiteEndEquip.partition(": ")
+								self._placeItem(self.right, " ", tupleAk[0])
+							if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 								if tupleAk[0] == 'End Equipment':
 									self._placeItem(self.right, "Router",tupleAk[2])
 								else:
-									self._placeItem(self.right, "Router",tupleAk[2])
-						if schemaData[j].ZSite == schemaData[k].ZSite:
-							for i in reversed(range(0, len(schemaData[k].ZEndEquip))):
-								tupleZ = schemaData[k].ZEndEquip[i].partition(": ")
+									self._placeItem(self.right, " ",tupleAk[2])
+						if schemaData[0][j].ZSite == schemaData[0][k].ZSite and j!=k:
+							#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
+							tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 
 							if(len(tupleZ[2]) > 0):
-								self._placeItem(self.right, tupleZ[0], tupleZ[2])
+								self._placeItem(self.right, "Router", tupleZ[2])
 							else:
-								self._placeItem(self.right, "Unknown", tupleZ[0])
+								self._placeItem(self.right, " ", tupleZ[0])
 							
-							if (schemaData[k].ZEndEquip != None and schemaData[k].ZEndEquip != ""):
-								tupleZ = schemaData[k].ZEndEquip.partition(": ")
+							if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 								if tupleZ[0]== 'End Equipment':
 									self._placeItem(self.right, "Router", tupleZ[2])
 								else:
-									self._placeItem(self.right, "Router", tupleZ[2])
+									self._placeItem(self.right, " ", tupleZ[2])
 			
-			# ---------------------
-			# right column, A
+			## ---------------------
+			## right column, A
 			
-			# put the outside cable, if there
-			self.right["connectionText"] = schemaData[0].ASiteOspFiberCable
+			## put the outside cable, if there
+			#self.right["connectionText"] = schemaData[0].ASiteOspFiberCable
 			
-			# put all other site equipment
-			for i in reversed(range(0, len(schemaData[0].ASiteEquip))):
-				tuple = schemaData[0].ASiteEquip[i].partition(": ")
+			## put all other site equipment
+			#for i in reversed(range(0, len(schemaData[0].ASiteEquip))):
+			#	tuple = schemaData[0].ASiteEquip[i].partition(": ")
 				
-				# if can't get type from string use cable (blank icon)
-				if (len(tuple[2]) > 0):
-					self._placeItem(self.right, "Router", tuple[2])
-				else:
-					self._placeItem(self.right, "Router", tuple[0])
+			#	# if can't get type from string use cable (blank icon)
+			#	if (len(tuple[2]) > 0):
+			#		self._placeItem(self.right, "Router", tuple[2])
+			#	else:
+			#		self._placeItem(self.right, "Router", tuple[0])
 			
-			# put the end equipment
-			if (schemaData[0].ASiteEndEquip != None and schemaData[0].ASiteEndEquip != ""):
-				tuple = schemaData[0].ASiteEndEquip.partition(": ")
-				if tuple[0]== 'End Equipment':
-					self._placeItem(self.right, "Router", tuple[2])
-				else:
-					self._placeItem(self.right, "Router", tuple[2])
+			## put the end equipment
+			#if (schemaData[0].ASiteEndEquip != None and schemaData[0].ASiteEndEquip != ""):
+			#	tuple = schemaData[0].ASiteEndEquip.partition(": ")
+			#	if tuple[0]== 'End Equipment':
+			#		self._placeItem(self.right, "Router", tuple[2])
+			#	else:
+			#		self._placeItem(self.right, "Router", tuple[2])
 			
 			
 			#populate form
@@ -904,9 +903,9 @@ class DynamicSchemaGenerator:
 				elif oleObject.Name == "lbl_circuit_id":
 					oleObject.Caption = schemaData[0].MasterCircuitName
 				elif oleObject.Name == "lbl_cust_addr":
-					oleObject.Caption = schemaData[0].ASiteName + " ; " + schemaData[0].ASiteCLLI + " ; " +schemaData[0].ASiteAddress
+					oleObject.Caption = schemaData[0][0].ASiteName + " ; " + schemaData[0][0].ASiteCLLI + " ; " +schemaData[0][0].ASiteAddress
 				elif oleObject.Name == "lbl_head_addr":
-					oleObject.Caption = schemaData[0].ZName + " ; " + schemaData[0].ZCLLI + " ; " +schemaData[0].ZAddress
+					oleObject.Caption = schemaData[0][0].ZName + " ; " + schemaData[0][0].ZCLLI + " ; " +schemaData[0][0].ZAddress
 					
 					
 		except Exception as e:
@@ -972,6 +971,7 @@ class DynamicSchemaGenerator:
 
 		else:
 			shape = self._placeEquipment(sideData,type, value)
+			
 		
 		if sideData["firstShape"] is None and shape is not None:
 			sideData["firstShape"] = shape
@@ -981,7 +981,7 @@ class DynamicSchemaGenerator:
 	
 	def _placeEquipment(self, sideData,type, value):
 		shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"])
-		shape.Cells("Prop.Row_1").Formula = '"' + value + '"'
+		#shape.Cells("Prop.Row_1").Formula = '"' + value + '"'
 		sideData["connectionTextColor"] = "0"
 		self._drawConnection(sideData, shape)
 		sideData["previousShape"] = shape
@@ -1020,32 +1020,33 @@ class SchemaData:
 	
 	def parseArray(self, dataArray):
 		result = []
+		data = []
 		for i in range(0, len(dataArray)):
-			data = SchemaData()
+			data.append(SchemaData())
 			
-			data.ASite = dataArray[i][0]
-			data.ASiteName = dataArray[i][1]
-			data.ASiteCLLI = dataArray[i][2]
-			data.ASiteType = dataArray[i][3]
-			data.ASiteLocation = dataArray[i][4]
-			data.ASiteAddress = dataArray[i][5]
-			data.ASiteEndEquip = dataArray[i][6]
-			data.ASiteEquip = dataArray[i][7]
-			data.ASiteOspFiberCable = dataArray[i][8]
-			data.Usage = dataArray[i][9]
-			data.ZSite = dataArray[i][10]
-			data.ZName = dataArray[i][11]
-			data.ZCLLI = dataArray[i][12]
-			data.ZType = dataArray[i][13]
-			data.ZLocation = dataArray[i][14]
-			data.ZAddress = dataArray[i][15]
-			data.ZEndEquip = dataArray[i][16]
-			data.ZEquip = dataArray[i][17]
-			data.ZOspFiberCable = dataArray[i][18]
-			data.MasterCircuitName = dataArray[i][19]
-			data.JobName = dataArray[i][20]
-			data.JobOwner = dataArray[i][21]
-			data.Date = dataArray[i][22]
+			data[i].ASite = dataArray[i][0]
+			data[i].ASiteName= dataArray[i][1]
+			data[i].ASiteCLLI = dataArray[i][2]
+			data[i].ASiteType = dataArray[i][3]
+			data[i].ASiteLocation = dataArray[i][4]
+			data[i].ASiteAddress = dataArray[i][5]
+			data[i].ASiteEndEquip = dataArray[i][6]
+			data[i].ASiteEquip = dataArray[i][7]
+			data[i].ASiteOspFiberCable = dataArray[i][8]
+			data[i].Usage = dataArray[i][9]
+			data[i].ZSite = dataArray[i][10]
+			data[i].ZName = dataArray[i][11]
+			data[i].ZCLLI = dataArray[i][12]
+			data[i].ZType = dataArray[i][13]
+			data[i].ZLocation = dataArray[i][14]
+			data[i].ZAddress = dataArray[i][15]
+			data[i].ZEndEquip = dataArray[i][16]
+			data[i].ZEquip = dataArray[i][17]
+			data[i].ZOspFiberCable = dataArray[i][18]
+			data[i].MasterCircuitName = dataArray[i][19]
+			data[i].JobName = dataArray[i][20]
+			data[i].JobOwner = dataArray[i][21]
+			data[i].Date = dataArray[i][22]
 		result.append(data)
 		return result
 #end of SchemaData class
