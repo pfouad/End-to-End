@@ -1190,11 +1190,37 @@ class DynamicSchemaGenerator:
 						tupleZkT = schemaData[0][k].ZEndEquip.partition("\ ")
 						move = False
 						if (tupleAT[2] == 'IP' or tupleZT[2] == 'IP'):
-
+							
 							if self.left["previous shape"] == None:
-								
+								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+									if tupleA[0]== 'End Equipment':
+										if tupleAT == 'IP':
+											self._placeItem(self.left, "Router", tupleA[2])
+										elif tupleAT == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleA[2])
+								if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+									tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+									if tupleZ[0]== 'End Equipment':
+										if tupleZT == 'IP':
+											self._placeItem(self.left, "Router", tupleZ[2])
+										elif tupleZT == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
 							elif self.right["previous shape"] == None:
-
+								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+									if tupleA[0]== 'End Equipment':
+										if tupleAT == 'IP':
+											self._placeItem(self.right, "Router", tupleA[2])
+										elif tupleAT == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleA[2])
+								if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+									tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+									if tupleZ[0]== 'End Equipment':
+										if tupleZT == 'IP':
+											self._placeItem(self.right, "Router", tupleZ[2])
+										elif tupleZT == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
 						elif (tupleAkT[2] == 'IP' or tupleZkT[2] == 'IP'):
 							if self.left["previous shape"] == None:
 
