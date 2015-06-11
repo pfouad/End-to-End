@@ -190,11 +190,12 @@ def main():
 						first_port = ent2  #make the ith entity the first port
 
 					parent = ent2.ISPA_PORT_OWNER_FK #find the parent of the ent2
-
+					chassis = getChassis(ent2)
 					if parent.fdm_interface_fk is not None: #if the parent has an osp interface then
 						#found patch panel
-						chassis = getChassis(ent2)  #get the chassis of ent2
+						  #get the chassis of ent2
 						pnl = checkValue(chassis.ISPA_NAME) + " ; "+checkValue(chassis.ISPA_SECTION_F_CODE) + " ; " + checkValue(ent2.ISPA_PORT_NAME) 
+						 
 						a_end_equip.append(addedInJob(chassis,"Patch Panel")+": "+pnl) #get the name of the panel and all information
 
 					#check for De(Mux) or patch panel
@@ -203,7 +204,7 @@ def main():
 						try:
 							equip_type_details = equip_dict.values(parent.ISPA_EQUIP_DICT_FK.NETWORK_KEY)  #get the details of the type of equipment that is ent2
 							desc = checkValue(equip_type_details.DESC1) #get the description of the chassis from the dictionary
-							a_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1
+							a_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1  +  " | " + checkValue(chassis.gdm_ea_attr_20) + " / " + checkValue(chassis.gdm_ea_attr_21)
 							#if desc.upper().find("MULTIPLEXER")!= -1: #if there is the substring MULTIPLEXER in the description of the chassis then
 							#	#found mux! Now get the information of the mux shelf
 							#	mux = checkValue(equip_type_details.MODEL) + " ; " + desc + " ; "+ checkValue(parent.ISPA_SECTION_F_CODE) + " ; "+ checkValue(parent.ISPA_NAME)
@@ -321,16 +322,16 @@ def main():
 						
 				if ent2.is_class("ISP_PORT"): #if ent2 is an isp port then
 				
-					#print str(entity_list[r].entity)+ "(z) : depth("+ str(entity_list[r].depth)+"), branch("+str(entity_list[r].branch_number)+")"
+					print str(entity_list[r].entity)+ "(z) : depth("+ str(entity_list[r].depth)+"), branch("+str(entity_list[r].branch_number)+")"
 				
 					if first_port is None: #if the first port has not been discovered yet then ent2 is the first port
 						first_port = ent2
 
 					parent = ent2.ISPA_PORT_OWNER_FK #get ent2's parent
 					#check for patch panel
-					
+					chassis = getChassis(ent2)
 					if parent.fdm_interface_fk is not None: #if there is some osp interface then
-						chassis = getChassis(ent2)  #get the chassis of ent2 (it is a panel)
+						  #get the chassis of ent2 (it is a panel)
 						pnl = checkValue(chassis.ISPA_NAME) + " ; "+checkValue(chassis.ISPA_SECTION_F_CODE) + " ; " + checkValue(ent2.ISPA_PORT_NAME)  #put all information into pnl
 						z_end_equip.append(addedInJob(chassis,"Patch Panel")+": "+pnl) #append pnl into z end equipment
 
@@ -350,7 +351,7 @@ def main():
 							if ent2 != first_port and entity_list[r].branch_number==1:
 								correct_order=False
 									
-							z_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1
+							z_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+equip_type_details.MODEL + " ; " + equip_type_details.DESC1  +  " | " + checkValue(chassis.gdm_ea_attr_20) + " / " + checkValue(chassis.gdm_ea_attr_21)
 
 						except Exception as e:
 							#lov conversion not found
@@ -697,358 +698,482 @@ class DynamicSchemaGenerator:
 			#these two loops are to check if sites are the same, if so then add all relevant equipment to the site (it should loop through all traces)
 
 			if midDrop == False:
-				if (schemaData[0][0].ASite == schemaData[0][0].ZSite):
-					#for i in reversed(range(0, len(schemaData[0][0].ASiteEndEquip))):
-					tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-							
-					if(len(tupleA[2]) > 0):
-						self._placeItem(self.left, "Router", tupleA[2])
-					#else:
-					#	self._placeItem(self.left, " ", tupleA[0])
-					# put all other site equipment
-					#for i in reversed(range(0, len(schemaData[0][0].ZEndEquip))):
-					tupleZ = schemaData[0][0].ZEndEquip.partition(": ")
-				
-						# if can't get type from string use cable (blank icon)
-					if (len(tupleZ[2]) > 0):
-						self._placeItem(self.left, "Router", tupleZ[2])
-					else:
-						self._placeItem(self.left, " ", tupleZ[0])
-					if (schemaData[0][0].ASiteEndEquip != None and schemaData[0][0].ASiteEndEquip != ""):
-						tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-						if tupleA[0]== 'End Equipment':
-							self._placeItem(self.left, "Router", tupleA[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleA[2])
-					# put the end equipment
-					if (schemaData[0][0].ZEndEquip != None and schemaData[0][0].ZEndEquip != ""):
-						tupleZ = schemaData[0][0].ZEndEquip.partition(": ")
-						if tupleZ[0]== 'End Equipment':
-							self._placeItem(self.left, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleZ[2])
+				for j in range(0,len(schemaData[0])):
+					for k in range(0,len(schemaData[0])):
+					# put the outside cable, if there
+						#self.left["connectionText"] = schemaData[j].ZOspFiberCable
 					
-					if (schemaData[0][0].ASite == schemaData[0][len(schemaData[0])-1].ASite):
-						#for i in reversed(range(0, len(schemaData[0][0].ASiteEndEquip))):
-						tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-
-						if(len(tupleA[2]) > 0):
-							self._placeItem(self.left, "Router", tupleA[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleA[0])
-
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ASiteEndEquip))):
-						tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-
-						if(len(tupleAk[2]) > 0):
-							self._placeItem(self.left, "Router", tupleAk[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleAk[0])
-
-						if (schemaData[0][0].ASiteEndEquip != None and schemaData[0][0].ASiteEndEquip != ""):
-							tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-							if tupleA[0]== 'End Equipment':
-								self._placeItem(self.left, "Router", tupleA[2])
-							#else:
-							#	self._placeItem(self.left, " ", tupleA[2])
-						if(schemaData[0][len(schemaData[0])-1].ASiteEndEquip != None and schemaData[0][len(schemaData[0])-1].ASiteEndEquip != ""):
-							tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-							if tupleAk[0] == 'End Equipment':
-								self._placeItem(self.left, "Router",tupleAk[2])
-							#else:
-							#	self._placeItem(self.left, " ",tupleAk[2])
-					if (schemaData[0][0].ASite == schemaData[0][len(schemaData[0])-1].ZSite):
-						#for i in reversed(range(0, len(schemaData[0][0].ASiteEndEquip))):
-						tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-						if(len(tupleA[2]) > 0):
-							self._placeItem(self.left, "Router", tupleA[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleA[0])
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ZEndEquip))):
-						tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-
-						if(len(tupleZ[2]) > 0):
-							self._placeItem(self.left, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleZ[0])
-						if (schemaData[0][0].ASiteEndEquip != None and schemaData[0][0].ASiteEndEquip != ""):
-							tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-							if tupleA[0]== 'End Equipment':
-								self._placeItem(self.left, "Router", tupleA[2])
-							#else:
-							#	self._placeItem(self.left, " ", tupleA[2])
-						if (schemaData[0][len(schemaData[0])-1].ZEndEquip != None and schemaData[0][len(schemaData[0])-1].ZEndEquip != ""):
-							tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-							if tupleZ[0]== 'End Equipment':
-								self._placeItem(self.left, "Router", tupleZ[2])
-							#else:
-							#	self._placeItem(self.left, " ", tupleZ[2])
-				elif (schemaData[0][0].ASite == schemaData[0][0].ZSite):
-					#for i in reversed(range(0, len(schemaData[0][0].ASiteEndEquip))):
-					tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
+						if (schemaData[0][j].ASite == schemaData[0][j].ZSite) and j == 0:
+							#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+							tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 							
-					if(len(tupleA[2]) > 0):
-						self._placeItem(self.right, "Router", tupleA[2])
-					#else:
-					#	self._placeItem(self.right, " ", tupleA[0])
-					# put all other site equipment
-					#for i in reversed(range(0, len(schemaData[0][0].ZEndEquip))):
-					tupleZ = schemaData[0][0].ZEndEquip.partition(": ")
+							if(len(tupleA[2]) > 0):
+								self._placeItem(self.left, "Router", tupleA[2])
+							#else:
+							#	self._placeItem(self.left, " ", tupleA[0])
+							# put all other site equipment
+							#for i in reversed(range(0, len(schemaData[0][j].ZEndEquip))):
+							tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
 				
-						# if can't get type from string use cable (blank icon)
-					if (len(tupleZ[2]) > 0):
-						self._placeItem(self.right, "Router", tupleZ[2])
-					else:
-						self._placeItem(self.right, " ", tupleZ[0])
-					if (schemaData[0][0].ASiteEndEquip != None and schemaData[0][0].ASiteEndEquip != ""):
-						tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-						if tupleA[0]== 'End Equipment':
-							self._placeItem(self.right, "Router", tupleA[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleA[2])
-					# put the end equipment
-					if (schemaData[0][0].ZEndEquip != None and schemaData[0][0].ZEndEquip != ""):
-						tupleZ = schemaData[0][0].ZEndEquip.partition(": ")
-						if tupleZ[0]== 'End Equipment':
-							self._placeItem(self.right, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleZ[2])
+								# if can't get type from string use cable (blank icon)
+							if (len(tupleZ[2]) > 0):
+								self._placeItem(self.left, "Router", tupleZ[2])
+							else:
+								self._placeItem(self.left, " ", tupleZ[0])
+							if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+								tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
+								if tupleA[0]== 'End Equipment':
+									if tupleAT[2] == 'IP':
+										self._placeItem(self.left, "Router", tupleA[2])
+									elif tupleAT[2] == 'Transport':
+										self._placeItem(self.left, "Nortel OM6500", tupleA[2])
+								#else:
+								#	self._placeItem(self.left, " ", tupleA[2])
+							# put the end equipment
+							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+								tupleZT = schemaData[0][j].ZEndEquip.partition("\ ")
+
+								if tupleZ[0]== 'End Equipment':
+									if tupleZT[2] == 'IP':
+										self._placeItem(self.left, "Router", tupleZ[2])
+									elif tupleZT[2] == 'Transport':
+										self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
+								#else:
+								#	self._placeItem(self.left, " ", tupleZ[2])
 					
-					if (schemaData[0][0].ASite == schemaData[0][len(schemaData[0])-1].ASite):
-						#for i in reversed(range(0, len(schemaData[0][0].ASiteEndEquip))):
-						tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
+							if (schemaData[0][j].ASite == schemaData[0][k].ASite) and (j != k):
+								#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 
-						if(len(tupleA[2]) > 0):
-							self._placeItem(self.right, "Router", tupleA[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleA[0])
+								if(len(tupleA[2]) > 0):
+									self._placeItem(self.left, "Router", tupleA[2])
+								#else:
+								#	self._placeItem(self.left, " ", tupleA[0])
 
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ASiteEndEquip))):
-						tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
+								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
+								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 
-						if(len(tupleAk[2]) > 0):
-							self._placeItem(self.right, "Router", tupleAk[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleAk[0])
+								if(len(tupleAk[2]) > 0):
+									self._placeItem(self.left, "Router", tupleAk[2])
+								#else:
+								#	self._placeItem(self.left, " ", tupleAk[0])
 
-						if (schemaData[0][0].ASiteEndEquip != None and schemaData[0][0].ASiteEndEquip != ""):
-							tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-							if tupleA[0]== 'End Equipment':
+								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+									tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
+									
+									if tupleA[0]== 'End Equipment':
+										if tupleAT[2] == 'IP':
+											self._placeItem(self.left, "Router", tupleA[2])
+										elif tupleAT[2] == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleA[2])
+											#else:
+									#	self._placeItem(self.left, " ", tupleA[2])
+								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("\ ")
+
+									if tupleAk[0] == 'End Equipment':
+										if tupleAkT[2] == 'IP':
+											self._placeItem(self.left, "Router",tupleAk[2])
+										elif tupleAkT[2] == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleAk[2])
+											#else:
+									#	self._placeItem(self.left, " ",tupleAk[2])
+							if (schemaData[0][j].ASite == schemaData[0][k].ZSite) and (j!=k):
+								#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+								if(len(tupleA[2]) > 0):
+									self._placeItem(self.left, "Router", tupleA[2])
+								#else:
+								#	self._placeItem(self.left, " ", tupleA[0])
+								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
+								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+
+								if(len(tupleZ[2]) > 0):
+									self._placeItem(self.left, "Router", tupleZ[2])
+								#else:
+								#	self._placeItem(self.left, " ", tupleZ[0])
+								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+									tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
+									
+									if tupleA[0]== 'End Equipment':
+										if tupleAT[2] == 'IP':
+											self._placeItem(self.left, "Router", tupleA[2])
+										elif tupleAT[2] == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleA[2])
+									#else:
+									#	self._placeItem(self.left, " ", tupleA[2])
+								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+									tupleZT = schemaData[0][k].ZEndEquip.partition("\ ")
+
+									if tupleZ[0]== 'End Equipment':
+										if tupleZT[2] == 'IP':
+											self._placeItem(self.left, "Router", tupleZ[2])
+										elif tupleZT[2] == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
+									#else:
+									#	self._placeItem(self.left, " ", tupleZ[2])
+						elif (schemaData[0][j].ASite == schemaData[0][j].ZSite) and j != 0:
+							#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+							tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+							
+							if(len(tupleA[2]) > 0):
 								self._placeItem(self.right, "Router", tupleA[2])
 							#else:
-							#	self._placeItem(self.right, " ", tupleA[2])
-						if(schemaData[0][len(schemaData[0])-1].ASiteEndEquip != None and schemaData[0][len(schemaData[0])-1].ASiteEndEquip != ""):
-							tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-							if tupleAk[0] == 'End Equipment':
-								self._placeItem(self.right, "Router",tupleAk[2])
-							#else:
-							#	self._placeItem(self.right, " ",tupleAk[2])
-					if (schemaData[0][0].ASite == schemaData[0][len(schemaData[0])-1].ZSite):
-						#for i in reversed(range(0, len(schemaData[0][0].ASiteEndEquip))):
-						tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-						if(len(tupleA[2]) > 0):
-							self._placeItem(self.right, "Router", tupleA[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleA[0])
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ZEndEquip))):
-						tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-						if(len(tupleZ[2]) > 0):
-							self._placeItem(self.right, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleZ[0])
-						if (schemaData[0][0].ASiteEndEquip != None and schemaData[0][0].ASiteEndEquip != ""):
-							tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-							if tupleA[0]== 'End Equipment':
-								self._placeItem(self.right, "Router", tupleA[2])
-							#else:
-							#	self._placeItem(self.right, " ", tupleA[2])
-						if (schemaData[0][len(schemaData[0])-1].ZEndEquip != None and schemaData[0][len(schemaData[0])-1].ZEndEquip != ""):
-							tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-							if tupleZ[0]== 'End Equipment':
+							#	self._placeItem(self.right, " ", tupleA[0])
+							# put all other site equipment
+							#for i in reversed(range(0, len(schemaData[0][j].ZEndEquip))):
+							tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+				
+								# if can't get type from string use cable (blank icon)
+							if (len(tupleZ[2]) > 0):
 								self._placeItem(self.right, "Router", tupleZ[2])
-							#else:
-							#	self._placeItem(self.right, " ", tupleZ[2])
-				elif (schemaData[0][0].ASite != schemaData[0][0].ZSite):
-					#for i in reversed(range(0, len(schemaData[0][0].ASiteEndEquip))):
-					tupleA = schemaData[0][0].ASiteEndEquip[i].partition(": ")
-					if(len(tupleA[2]) > 0):
-						self._placeItem(self.left, "Router", tupleA[2])
-					else:
-						self._placeItem(self.left, " ", tupleA[0])
-					if (schemaData[0][0].ASiteEndEquip != None and schemaData[0][0].ASiteEndEquip != ""):
-							tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-							if tupleA[0]== 'End Equipment':
+							else:
+								self._placeItem(self.right, " ", tupleZ[0])
+							if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+								tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
+
+								if tupleA[0]== 'End Equipment':
+									if tuple[2] == 'IP':
+										self._placeItem(self.right, "Router", tupleA[2])
+									elif tuple[2] == 'Transport':
+										self._placeItem(self.right, "Nortel OM6500", tupleA[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleA[2])
+							# put the end equipment
+							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+								tupleZT = schemaData[0][j].ZEndEquip.partition("/ ")
+
+								if tupleZ[0]== 'End Equipment':
+									if tupleZT[2] == 'IP':
+										self._placeItem(self.right, "Router", tupleZ[2])
+									elif tupleZT[2] == 'Transport':
+										self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleZ[2])
+					
+							if (schemaData[0][j].ASite == schemaData[0][k].ASite) and (j != k):
+								#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+
+								if(len(tupleA[2]) > 0):
+									self._placeItem(self.right, "Router", tupleA[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleA[0])
+
+								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
+								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+
+								if(len(tupleAk[2]) > 0):
+									self._placeItem(self.right, "Router", tupleAk[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleAk[0])
+
+								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+									tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
+
+									if tupleA[0]== 'End Equipment':
+										if tupleAT[2] == 'IP':
+											self._placeItem(self.right, "Router", tupleA[2])
+										elif tupleAT[2] == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleA[2])
+									#else:
+									#	self._placeItem(self.right, " ", tupleA[2])
+								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("\ ")
+
+									if tupleAk[0] == 'End Equipment':
+										if tupleAkT[2] == 'IP':
+											self._placeItem(self.right, "Router",tupleAk[2])
+										elif tupleAkT[2] == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleAk[2])
+									#else:
+									#	self._placeItem(self.right, " ",tupleAk[2])
+							if (schemaData[0][j].ASite == schemaData[0][k].ZSite) and (j!=k):
+								#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+								if(len(tupleA[2]) > 0):
+									self._placeItem(self.right, "Router", tupleA[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleA[0])
+								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
+								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+								if(len(tupleZ[2]) > 0):
+									self._placeItem(self.right, "Router", tupleZ[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleZ[0])
+								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+									tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
+
+									if tupleA[0]== 'End Equipment':
+										if tupleAT[2] == 'IP':
+											self._placeItem(self.right, "Router", tupleA[2])
+										elif tupleAT[2] == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleA[2])
+									#else:
+									#	self._placeItem(self.right, " ", tupleA[2])
+								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+									tupleZT = schemaData[0][k].ZEndEquip.partition("\ ")
+
+									if tupleZ[0]== 'End Equipment':
+										if tupleZT[2] == 'IP':
+											self._placeItem(self.right, "Router", tupleZ[2])
+										elif tupleZT[2] == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
+									#else:
+									#	self._placeItem(self.right, " ", tupleZ[2])
+						elif (schemaData[0][j].ASite != schemaData[0][j].ZSite) and j == 0:
+							#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+							tupleA = schemaData[0][j].ASiteEndEquip[i].partition(": ")
+							if(len(tupleA[2]) > 0):
 								self._placeItem(self.left, "Router", tupleA[2])
-							#else:
-							#	self._placeItem(self.left, " ", tupleA[2])
+							else:
+								self._placeItem(self.left, " ", tupleA[0])
+							if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+									tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
+
+									if tupleA[0]== 'End Equipment':
+										if tupleAT == 'IP':
+											self._placeItem(self.left, "Router", tupleA[2])
+										elif tupleAT == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleA[2])
+									#else:
+									#	self._placeItem(self.left, " ", tupleA[2])
 						
-					#for i in reversed(range(0, len(schemaData[0][0].ZEquip))):
-					tupleZ = schemaData[0][0].ZEndEquip.partition(": ")
+							#for i in reversed(range(0, len(schemaData[0][j].ZEquip))):
+							tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
 				
-							# if can't get type from string use cable (blank icon)
-					if (len(tupleZ[2]) > 0):
-						self._placeItem(self.right, "Router", tupleZ[2])
-					#else:
-					#	self._placeItem(self.right, " ", tupleZ[0])
-					if (schemaData[0][0].ZEndEquip != None and schemaData[0][0].ZEndEquip != ""):
-						tupleZ = schemaData[0][0].ZEndEquip.partition(": ")
-						if tupleZ[0]== 'End Equipment':
-							self._placeItem(self.right, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleZ[2])
-
-					if schemaData[0][0].ASite == schemaData[0][len(schemaData[0])-1].ASite:
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ASiteEndEquip))):
-						tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-
-						if(len(tupleAk[2]) > 0):
-							self._placeItem(self.left, "Router", tupleAk[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleAk[0])
-
-							
-						if(schemaData[0][len(schemaData[0])-1].ASiteEndEquip != None and schemaData[0][len(schemaData[0])-1].ASiteEndEquip != ""):
-							tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-							if tupleAk[0] == 'End Equipment':
-								self._placeItem(self.left, "Router",tupleAk[2])
-							#else:
-							#	self._placeItem(self.left, " ",tupleAk[2])
-					if schemaData[0][0].ASite == schemaData[0][len(schemaData[0])-1].ZSite:
-							
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ZEndEquip))):
-						tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-
-						if(len(tupleZ[2]) > 0):
-							self._placeItem(self.left, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleZ[0])
-							
-						if (schemaData[0][len(schemaData[0])-1].ZEndEquip != None and schemaData[0][len(schemaData[0])-1].ZEndEquip != ""):
-							tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-							if tupleZ[0]== 'End Equipment':
-								self._placeItem(self.left, "Router", tupleZ[2])
-							#else:
-							#	self._placeItem(self.left, " ", tupleZ[2])
-					if schemaData[0][0].ZSite == schemaData[0][len(schemaData[0])-1].ASite and j!=k:
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ASiteEndEquip))):
-						tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-
-						if(len(tupleAk[2]) > 0):
-							self._placeItem(self.right, "Router", tupleAk[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleAk[0])
-						if(schemaData[0][len(schemaData[0])-1].ASiteEndEquip != None and schemaData[0][len(schemaData[0])-1].ASiteEndEquip != ""):
-							tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-							if tupleAk[0] == 'End Equipment':
-								self._placeItem(self.right, "Router",tupleAk[2])
-							#else:
-							#	self._placeItem(self.right, " ",tupleAk[2])
-					if schemaData[0][0].ZSite == schemaData[0][len(schemaData[0])-1].ZSite:
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ZEndEquip))):
-						tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-
-						if(len(tupleZ[2]) > 0):
-							self._placeItem(self.right, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleZ[0])
-							
-						if (schemaData[0][len(schemaData[0])-1].ZEndEquip != None and schemaData[0][len(schemaData[0])-1].ZEndEquip != ""):
-							tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-							if tupleZ[0]== 'End Equipment':
+									# if can't get type from string use cable (blank icon)
+							if (len(tupleZ[2]) > 0):
 								self._placeItem(self.right, "Router", tupleZ[2])
 							#else:
-							#	self._placeItem(self.right, " ", tupleZ[2])
-				elif (schemaData[0][0].ASite != schemaData[0][0].ZSite):
-					#for i in reversed(range(0, len(schemaData[0][0].ASiteEndEquip))):
-					tupleA = schemaData[0][0].ASiteEndEquip[i].partition(": ")
-					if(len(tupleA[2]) > 0):
-						self._placeItem(self.right, "Router", tupleA[2])
-					#else:
-					#	self._placeItem(self.right, " ", tupleA[0])
-					if (schemaData[0][0].ASiteEndEquip != None and schemaData[0][0].ASiteEndEquip != ""):
-							tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-							if tupleA[0]== 'End Equipment':
+							#	self._placeItem(self.right, " ", tupleZ[0])
+							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+								tupleZT = schemaData[0][j].ZEndEquip.partition("\ ")
+
+								if tupleZ[0]== 'End Equipment':
+									if tupleZT[2] == 'IP':
+										self._placeItem(self.right, "Router", tupleZ[2])
+									elif tupleZT[2] == 'Transport':
+										self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleZ[2])
+
+							if schemaData[0][j].ASite == schemaData[0][k].ASite and j!=k :
+								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
+								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+
+								if(len(tupleAk[2]) > 0):
+									self._placeItem(self.left, "Router", tupleAk[2])
+								#else:
+								#	self._placeItem(self.left, " ", tupleAk[0])
+
+							
+								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("\ ")
+
+									if tupleAk[0] == 'End Equipment':
+										if tupleAkT[2] == 'IP':
+											self._placeItem(self.left, "Router",tupleAk[2])
+										if tupleAkT[2] == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleAk[2])
+									#else:
+									#	self._placeItem(self.left, " ",tupleAk[2])
+							if schemaData[0][j].ASite == schemaData[0][k].ZSite and j!=k:
+							
+								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
+								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+
+								if(len(tupleZ[2]) > 0):
+									self._placeItem(self.left, "Router", tupleZ[2])
+								#else:
+								#	self._placeItem(self.left, " ", tupleZ[0])
+							
+								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+									tupleZT = schemaData[0][k].ZEndEquip.partition("\ ")
+
+									if tupleZ[0]== 'End Equipment':
+										if tupleZT[2] == 'IP':
+											self._placeItem(self.left, "Router", tupleZ[2])
+										elif tupleZT[2] == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
+									#else:
+									#	self._placeItem(self.left, " ", tupleZ[2])
+							if schemaData[0][j].ZSite == schemaData[0][k].ASite and j!=k:
+								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
+								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+
+								if(len(tupleAk[2]) > 0):
+									self._placeItem(self.right, "Router", tupleAk[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleAk[0])
+								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("\ ")
+
+									if tupleAk[0] == 'End Equipment':
+										if tupleAkT[2] == 'IP':
+											self._placeItem(self.right, "Router",tupleAk[2])
+										elif tupleAkT[2] == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleAk[2])
+									#else:
+									#	self._placeItem(self.right, " ",tupleAk[2])
+							if schemaData[0][j].ZSite == schemaData[0][k].ZSite and j!=k:
+								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
+								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+
+								if(len(tupleZ[2]) > 0):
+									self._placeItem(self.right, "Router", tupleZ[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleZ[0])
+							
+								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+									tupleZT = schemaData[0][k].ZEndEquip.partition("\ ")
+
+									if tupleZ[0]== 'End Equipment':
+										if tupleZT[2] == 'IP':
+											self._placeItem(self.right, "Router", tupleZ[2])
+										elif tupleZT[2] == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
+									#else:
+									#	self._placeItem(self.right, " ", tupleZ[2])
+						elif (schemaData[0][j].ASite != schemaData[0][j].ZSite) and j != 0:
+							#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
+							tupleA = schemaData[0][j].ASiteEndEquip[i].partition(": ")
+							if(len(tupleA[2]) > 0):
 								self._placeItem(self.right, "Router", tupleA[2])
 							#else:
-							#	self._placeItem(self.left, " ", tupleA[2])
+							#	self._placeItem(self.right, " ", tupleA[0])
+							if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+									tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
+
+									if tupleA[0]== 'End Equipment':
+										if tupleAT[2] == 'IP':
+											self._placeItem(self.right, "Router", tupleA[2])
+										elif tupleAT[2] == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleA[2])
+									#else:
+									#	self._placeItem(self.left, " ", tupleA[2])
 						
-					#for i in reversed(range(0, len(schemaData[0][0].ZEquip))):
-					tupleZ = schemaData[0][0].ZEndEquip.partition(": ")
+							#for i in reversed(range(0, len(schemaData[0][j].ZEquip))):
+							tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
 				
-							# if can't get type from string use cable (blank icon)
-					if (len(tupleZ[2]) > 0):
-						self._placeItem(self.left, "Router", tupleZ[2])
-					#else:
-					#	self._placeItem(self.right, " ", tupleZ[0])
-					if (schemaData[0][0].ZEndEquip != None and schemaData[0][0].ZEndEquip != ""):
-						tupleZ = schemaData[0][0].ZEndEquip.partition(": ")
-						if tupleZ[0]== 'End Equipment':
-							self._placeItem(self.left, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleZ[2])
-
-					if schemaData[0][0].ASite == schemaData[0][len(schemaData[0])-1].ASite:
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ASiteEndEquip))):
-						tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-
-						if(len(tupleAk[2]) > 0):
-							self._placeItem(self.right, "Router", tupleAk[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleAk[0])
-
-							
-						if(schemaData[0][len(schemaData[0])-1].ASiteEndEquip != None and schemaData[0][len(schemaData[0])-1].ASiteEndEquip != ""):
-							tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-							if tupleAk[0] == 'End Equipment':
-								self._placeItem(self.right, "Router",tupleAk[2])
-							#else:
-							#	self._placeItem(self.right, " ",tupleAk[2])
-					if schemaData[0][0].ASite == schemaData[0][len(schemaData[0])-1].ZSite:
-							
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ZEndEquip))):
-						tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-
-						if(len(tupleZ[2]) > 0):
-							self._placeItem(self.right, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.right, " ", tupleZ[0])
-							
-						if (schemaData[0][len(schemaData[0])-1].ZEndEquip != None and schemaData[0][len(schemaData[0])-1].ZEndEquip != ""):
-							tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-							if tupleZ[0]== 'End Equipment':
-								self._placeItem(self.right, "Router", tupleZ[2])
-							#else:
-							#	self._placeItem(self.right, " ", tupleZ[2])
-					if schemaData[0][0].ZSite == schemaData[0][len(schemaData[0])-1].ASite and j!=k:
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ASiteEndEquip))):
-						tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-
-						if(len(tupleAk[2]) > 0):
-							self._placeItem(self.left, "Router", tupleAk[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleAk[0])
-						if(schemaData[0][len(schemaData[0])-1].ASiteEndEquip != None and schemaData[0][len(schemaData[0])-1].ASiteEndEquip != ""):
-							tupleAk = schemaData[0][len(schemaData[0])-1].ASiteEndEquip.partition(": ")
-							if tupleAk[0] == 'End Equipment':
-								self._placeItem(self.left, "Router",tupleAk[2])
-							#else:
-							#	self._placeItem(self.left, " ",tupleAk[2])
-					if schemaData[0][0].ZSite == schemaData[0][len(schemaData[0])-1].ZSite:
-						#for i in reversed(range(0, len(schemaData[0][len(schemaData[0])-1].ZEndEquip))):
-						tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-
-						if(len(tupleZ[2]) > 0):
-							self._placeItem(self.left, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleZ[0])
-							
-						if (schemaData[0][len(schemaData[0])-1].ZEndEquip != None and schemaData[0][len(schemaData[0])-1].ZEndEquip != ""):
-							tupleZ = schemaData[0][len(schemaData[0])-1].ZEndEquip.partition(": ")
-							if tupleZ[0]== 'End Equipment':
+									# if can't get type from string use cable (blank icon)
+							if (len(tupleZ[2]) > 0):
 								self._placeItem(self.left, "Router", tupleZ[2])
-
 							#else:
-							#	self._placeItem(self.left, " ", tupleZ[2])
+							#	self._placeItem(self.right, " ", tupleZ[0])
+							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+								tupleZT = schemaData[0][j].ZEndEquip.partition("\ ")
+
+								if tupleZ[0]== 'End Equipment':
+									if tupleZT[2] == 'IP':
+										self._placeItem(self.left, "Router", tupleZ[2])
+									elif tupleZT[2] == 'Transport':
+										self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleZ[2])
+
+							if schemaData[0][j].ASite == schemaData[0][k].ASite and j!=k :
+								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
+								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+
+								if(len(tupleAk[2]) > 0):
+									self._placeItem(self.right, "Router", tupleAk[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleAk[0])
+
+							
+								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("\ ")
+
+									if tupleAk[0] == 'End Equipment':
+										if tupleAkT[2] == 'IP':
+											self._placeItem(self.right, "Router",tupleAk[2])
+										elif tupleAkT[2] == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleAk[2])
+									#else:
+									#	self._placeItem(self.right, " ",tupleAk[2])
+							if schemaData[0][j].ASite == schemaData[0][k].ZSite and j!=k:
+							
+								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
+								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+
+								if(len(tupleZ[2]) > 0):
+									self._placeItem(self.right, "Router", tupleZ[2])
+								#else:
+								#	self._placeItem(self.right, " ", tupleZ[0])
+							
+								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+									tupleZT = schemaData[0][k].ZEndEquip.partition("\ ")
+
+									if tupleZ[0]== 'End Equipment':
+										if tupleZT[2] == 'IP':
+											self._placeItem(self.right, "Router", tupleZ[2])
+										elif tupleZT[2] == 'Transport':
+											self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
+									#else:
+									#	self._placeItem(self.right, " ", tupleZ[2])
+							if schemaData[0][j].ZSite == schemaData[0][k].ASite and j!=k:
+								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
+								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+
+								if(len(tupleAk[2]) > 0):
+									self._placeItem(self.left, "Router", tupleAk[2])
+								#else:
+								#	self._placeItem(self.left, " ", tupleAk[0])
+								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("\ ")
+
+									if tupleAk[0] == 'End Equipment':
+										if tupleAkT[2] == 'IP':
+											self._placeItem(self.left, "Router",tupleAk[2])
+										elif tupleAkT[2] == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleAk[2])
+									#else:
+									#	self._placeItem(self.left, " ",tupleAk[2])
+							if schemaData[0][j].ZSite == schemaData[0][k].ZSite and j!=k:
+								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
+								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+
+								if(len(tupleZ[2]) > 0):
+									self._placeItem(self.left, "Router", tupleZ[2])
+								#else:
+								#	self._placeItem(self.left, " ", tupleZ[0])
+							
+								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+									tupleZT = schemaData[0][k].ZEndEquip.partition("\ ")
+
+									if tupleZ[0]== 'End Equipment':
+										if tupleZT[2] == 'IP':
+											self._placeItem(self.left, "Router", tupleZ[2])
+										elif tupleZT[2] == 'Transport':
+											self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
+
+									#else:
+									#	self._placeItem(self.left, " ", tupleZ[2])
 			
 				self._placeEquipment(self.center, "DWDM/IP System", schemaData[0][0].Usage)
 
