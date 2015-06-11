@@ -1180,42 +1180,52 @@ class DynamicSchemaGenerator:
 
 			if midDrop == True:
 				self._drawMidLines(len(schema[0])-2)
+				m = 0
 
-				if (schemaData[0][0].ASite == schemaData[0][0].ZSite):
-					#for i in reversed(range(0, len(schemaData[0][0].ASiteEndEquip))):
-					tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
+				for j in range(0,len(schemaData[0])):
+					for k in range (1,len(schemaData[0])):
+						tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
+						tupleZT = schemaData[0][j].ZEndEquip.partition("\ ")
+						tupleAkT = schemaData[0][k].ASiteEndEquip.partition("\ ")
+						tupleZkT = schemaData[0][k].ZEndEquip.partition("\ ")
+						move = False
+						if (tupleAT[2] == 'IP' or tupleZT[2] == 'IP'):
+
+							if self.left["previous shape"] == None:
+								
+							elif self.right["previous shape"] == None:
+
+						elif (tupleAkT[2] == 'IP' or tupleZkT[2] == 'IP'):
+							if self.left["previous shape"] == None:
+
+							elif self.right["previous shape"] == None:
+
+						else:
 							
-					if(len(tupleA[2]) > 0):
-						self._placeItem(self.left, "Router", tupleA[2])
-					#else:
-					#	self._placeItem(self.left, " ", tupleA[0])
-					# put all other site equipment
-					#for i in reversed(range(0, len(schemaData[0][0].ZEndEquip))):
-					tupleZ = schemaData[0][0].ZEndEquip.partition(": ")
-				
-						# if can't get type from string use cable (blank icon)
-					if (len(tupleZ[2]) > 0):
-						self._placeItem(self.left, "Router", tupleZ[2])
-					else:
-						self._placeItem(self.left, " ", tupleZ[0])
-					if (schemaData[0][0].ASiteEndEquip != None and schemaData[0][0].ASiteEndEquip != ""):
-						tupleA = schemaData[0][0].ASiteEndEquip.partition(": ")
-						if tupleA[0]== 'End Equipment':
-							self._placeItem(self.left, "Router", tupleA[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleA[2])
-					# put the end equipment
-					if (schemaData[0][0].ZEndEquip != None and schemaData[0][0].ZEndEquip != ""):
-						tupleZ = schemaData[0][0].ZEndEquip.partition(": ")
-						if tupleZ[0]== 'End Equipment':
-							self._placeItem(self.left, "Router", tupleZ[2])
-						#else:
-						#	self._placeItem(self.left, " ", tupleZ[2])
+							if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+								if tupleA[0]== 'End Equipment':
+									self._placeItem(self.mid[m], "Nortel OM6500", tupleA[2])
+									move = True
+							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+								if tupleZ[0]== 'End Equipment':
+									self._placeItem(self.mid[m], "Nortel OM6500", tupleZ[2])
+									move = True
+							if schemaData[0][j].ASite == schemaData[0][k].ASite:
+								if (schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+									tupleA = schemaData[0][k].ASiteEndEquip.partition(": ")
+									if tupleA[0]== 'End Equipment':
+										self._placeItem(self.mid[m], "Nortel OM6500", tupleA[2])
+										move = True
+								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
+									if tupleZ[0]== 'End Equipment':
+										self._placeItem(self.mid[m], "Nortel OM6500", tupleZ[2])
+										move = True
+							if move == True:
+								m = m + 1
 
-
-				for j in range(1,len(schemaData[0])):
-					for k in range (2,len(schemaData[0])):
-				
 
 			
 			
@@ -1283,7 +1293,7 @@ class DynamicSchemaGenerator:
 		if value > 1:
 			for i in range(1,value):
 				self.page.DrawPolyline((5.9,i*(7.75/value)+0.8,10.9,i*(7.75/value)+0.8),8)
-				self.mid.append({"previousShape": None, "firstShape": None, "x": 8.4, "y": i*(7.75/value)+1.3, "connectionText": None})
+				self.mid.append({"previousShape": None, "firstShape": None, "x": 8.4, "y": i*(7.75/value)+1.0, "connectionText": None})
 		else:
 			self.mid.append({"previousShape": None, "firstShape": None, "x": 8.4, "y": 4.68, "connectionText": None})
 	#end of _drawMidLines function
