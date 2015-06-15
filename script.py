@@ -1183,74 +1183,106 @@ class DynamicSchemaGenerator:
 				m = 0
 
 				for j in range(0,len(schemaData[0])):
-					for k in range (1,len(schemaData[0])):
-						tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
-						tupleZT = schemaData[0][j].ZEndEquip.partition("\ ")
-						tupleAkT = schemaData[0][k].ASiteEndEquip.partition("\ ")
-						tupleZkT = schemaData[0][k].ZEndEquip.partition("\ ")
-						move = False
-						if (tupleAT[2] == 'IP' or tupleZT[2] == 'IP'):
-							
-							if self.left["previous shape"] == None:
-								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
-									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
-									if tupleA[0]== 'End Equipment':
-										if tupleAT == 'IP':
-											self._placeItem(self.left, "Router", tupleA[2])
-										elif tupleAT == 'Transport':
-											self._placeItem(self.left, "Nortel OM6500", tupleA[2])
-								if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
-									tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
-									if tupleZ[0]== 'End Equipment':
-										if tupleZT == 'IP':
-											self._placeItem(self.left, "Router", tupleZ[2])
-										elif tupleZT == 'Transport':
-											self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
-							elif self.right["previous shape"] == None:
-								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
-									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
-									if tupleA[0]== 'End Equipment':
-										if tupleAT == 'IP':
-											self._placeItem(self.right, "Router", tupleA[2])
-										elif tupleAT == 'Transport':
-											self._placeItem(self.right, "Nortel OM6500", tupleA[2])
-								if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
-									tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
-									if tupleZ[0]== 'End Equipment':
-										if tupleZT == 'IP':
-											self._placeItem(self.right, "Router", tupleZ[2])
-										elif tupleZT == 'Transport':
-											self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
-						elif (tupleAkT[2] == 'IP' or tupleZkT[2] == 'IP'):
-							if self.left["previous shape"] == None:
+					tupleAT = schemaData[0][j].ASiteEndEquip.partition("\ ")
+					tupleZT = schemaData[0][j].ZEndEquip.partition("\ ")
+					checked = False
+					move = False
+					for c in range(0,j):
+						if(schemaData[0][j].ASite == schemaData[0][c].ASite):
+							checked = True
+					if checked == False:
 
-							elif self.right["previous shape"] == None:
-
-						else:
+						for k in range (j,len(schemaData[0])):
+						
+							tupleAkT = schemaData[0][k].ASiteEndEquip.partition("\ ")
+							tupleZkT = schemaData[0][k].ZEndEquip.partition("\ ")
 							
-							if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
-								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
-								if tupleA[0]== 'End Equipment':
-									self._placeItem(self.mid[m], "Nortel OM6500", tupleA[2])
-									move = True
-							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
-								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
-								if tupleZ[0]== 'End Equipment':
-									self._placeItem(self.mid[m], "Nortel OM6500", tupleZ[2])
-									move = True
 							if schemaData[0][j].ASite == schemaData[0][k].ASite:
-								if (schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
-									tupleA = schemaData[0][k].ASiteEndEquip.partition(": ")
-									if tupleA[0]== 'End Equipment':
-										self._placeItem(self.mid[m], "Nortel OM6500", tupleA[2])
-										move = True
-								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
-									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
-									if tupleZ[0]== 'End Equipment':
-										self._placeItem(self.mid[m], "Nortel OM6500", tupleZ[2])
-										move = True
-							if move == True:
-								m = m + 1
+
+								if (tupleAT[2] == 'IP' or tupleZT[2] == 'IP' or tupleAkT == 'IP' or tupleZkT == 'IP'):
+							
+									if self.left["previous shape"] == None:
+										if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+											tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+											if tupleA[0]== 'End Equipment':
+												if tupleAT[2] == 'IP':
+													self._placeItem(self.left, "Router", tupleA[2])
+												elif tupleAT[2] == 'Transport':
+													self._placeItem(self.left, "Nortel OM6500", tupleA[2])
+										if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+											tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+											if tupleZ[0]== 'End Equipment':
+												if tupleZT[2] == 'IP':
+													self._placeItem(self.left, "Router", tupleZ[2])
+												elif tupleZT[2] == 'Transport':
+													self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
+										if (schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+											tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+											if tupleAk[0]== 'End Equipment':
+												if tupleAkT[2] == 'IP':
+													self._placeItem(self.left, "Router", tupleAk[2])
+												elif tupleAkT[2] == 'Transport':
+													self._placeItem(self.left, "Nortel OM6500", tupleAk[2])
+										if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+											tupleZk = schemaData[0][k].ZEndEquip.partition(": ")
+											if tupleZk[0]== 'End Equipment':
+												if tupleZkT[2] == 'IP':
+													self._placeItem(self.left, "Router", tupleZk[2])
+												elif tupleZkT[2] == 'Transport':
+													self._placeItem(self.left, "Nortel OM6500", tupleZk[2])
+									elif self.right["previous shape"] == None:
+										if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+											tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+											if tupleA[0]== 'End Equipment':
+												if tupleAT[2] == 'IP':
+													self._placeItem(self.right, "Router", tupleA[2])
+												elif tupleAT[2] == 'Transport':
+													self._placeItem(self.right, "Nortel OM6500", tupleA[2])
+										if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+											tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+											if tupleZ[0]== 'End Equipment':
+												if tupleZT[2] == 'IP':
+													self._placeItem(self.right, "Router", tupleZ[2])
+												elif tupleZT[2] == 'Transport':
+													self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
+										if (schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+											tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+											if tupleAk[0]== 'End Equipment':
+												if tupleAkT[2] == 'IP':
+													self._placeItem(self.right, "Router", tupleAk[2])
+												elif tupleAkT[2] == 'Transport':
+													self._placeItem(self.right, "Nortel OM6500", tupleAk[2])
+										if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+											tupleZk = schemaData[0][k].ZEndEquip.partition(": ")
+											if tupleZk[0]== 'End Equipment':
+												if tupleZkT[2] == 'IP':
+													self._placeItem(self.right, "Router", tupleZk[2])
+												elif tupleZkT[2] == 'Transport':
+													self._placeItem(self.right, "Nortel OM6500", tupleZk[2])
+								else:
+							
+									if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
+										tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
+										if tupleA[0]== 'End Equipment':
+											self._placeItem(self.mid[m], "Nortel OM6500", tupleA[2])
+											move = True
+									if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
+										tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
+										if tupleZ[0]== 'End Equipment':
+											self._placeItem(self.mid[m], "Nortel OM6500", tupleZ[2])
+											move = True
+									if (schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
+										tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
+										if tupleAk[0]== 'End Equipment':
+											self._placeItem(self.mid[m], "Nortel OM6500", tupleAk[2])
+											move = True
+									if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
+										tupleZk = schemaData[0][k].ZEndEquip.partition(": ")
+										if tupleZk[0]== 'End Equipment':
+											self._placeItem(self.mid[m], "Nortel OM6500", tupleZk[2])
+											move = True
+					if move == True:
+						m = m + 1
 
 
 			
