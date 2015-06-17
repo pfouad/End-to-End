@@ -1371,16 +1371,15 @@ class DynamicSchemaGenerator:
 											move = True
 
 					if move == True:
+						textbox = self.page.DrawRectangle(self.mid[m]["x"]+2,self.mid[m]["y"]+((self.mid[m]["y"]-1.2)/len(self.mid)) ,self.mid[m]["x"]+ 3.5, self.mid[m]["y"] + (self.mid[m]["y"]/len(self.mid)))
+						textbox.Text = schemaData[0][j].ASiteName + " ; " + schemaData[0][j].ASiteCLLI + " ; " +schemaData[0][j].ASiteCLLI + " ; " + schemaData[0][j].ASite
 						m = m + 1
 
-
-			
-			
 			#populate form
 			oleObjects = self.page.OLEObjects
 			for intCounter in range(1, oleObjects.Count+1) :
 				oleObject = oleObjects(intCounter).Object
-				
+			
 				if oleObject.Name == "lbl_title":
 					oleObject.Caption = schemaData[0][0].JobName
 				elif oleObject.Name == "lbl_drawn_by":
@@ -1390,7 +1389,7 @@ class DynamicSchemaGenerator:
 				elif oleObject.Name == "lbl_circuit_id":
 					oleObject.Caption = schemaData[0][0].MasterCircuitName
 				elif oleObject.Name == "lbl_cust_addr":
-					oleObject.Caption = schemaData[0][1].ASiteName + " ; " + schemaData[0][1].ASiteCLLI + " ; " +schemaData[0][1].ASiteAddress
+					oleObject.Caption = schemaData[0][len(schemaData[0])-1].ASiteName + " ; " + schemaData[0][len(schemaData[0])-1].ASiteCLLI + " ; " +schemaData[0][len(schemaData[0])-1].ASiteAddress
 				elif oleObject.Name == "lbl_head_addr":
 					oleObject.Caption = schemaData[0][0].ZName + " ; " + schemaData[0][0].ZCLLI + " ; " +schemaData[0][0].ZAddress
 					
@@ -1442,6 +1441,8 @@ class DynamicSchemaGenerator:
 				if i!= value:
 					self.page.DrawPolyline((5.9,(i+1)*(7.75/value)+1.2,10.9,(i+1)*(7.75/value)+1.2),8)
 				self.mid.append({"previousShape": None, "firstShape": None, "x": 7.2, "y": (i+1)*(7.75/value)-(7.75/(value**3)), "connectionText": None})
+				
+				
 		else:
 			self.mid.append({"previousShape": None, "firstShape": None, "x": 7.2, "y": 4.68, "connectionText": None})
 	#end of _drawMidLines function
