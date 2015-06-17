@@ -849,7 +849,7 @@ class DynamicSchemaGenerator:
 							# put the end equipment
 							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
 								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
-								tupleZT = schemaData[0][j].ZEndEquip.partition("| ")
+								tupleZT = schemaData[0][j].ZEndEquip.partition("/ ")
 
 								if tupleZ[0]== 'End Equipment_new':
 									if tupleZT[2] == 'IP':
@@ -1438,8 +1438,7 @@ class DynamicSchemaGenerator:
 	def _drawMidLines(self,value):
 		if value > 1:
 			for i in range(0,value):
-				if i!= value:
-					self.page.DrawPolyline((5.9,(i+1)*(7.75/value)+1.2,10.9,(i+1)*(7.75/value)+1.2),8)
+				self.page.DrawPolyline((5.9,(i+1)*(7.75/value)+1.2,10.9,(i+1)*(7.75/value)+1.2),8)
 				self.mid.append({"previousShape": None, "firstShape": None, "x": 7.2, "y": (i+1)*(7.75/value)-(7.75/(value**3)), "connectionText": None})
 				
 				
@@ -1492,25 +1491,10 @@ class DynamicSchemaGenerator:
 		else:
 			textbox = self.page.DrawRectangle(sideData["x"] + 1,sideData["y"] +0.3 ,sideData["x"]-1, sideData["y"]-0.3)
 			textbox.Text = '"' + value + '"'
-			for i in range(0,len(self.mid)):
-				if sideData["y"] == self.mid[i]["y"]:
-					
-					if i == 0:
-						if self.mid[i]["firstShape"] == None:
-							self._drawConnection(self.left,shape)
-						else:
-							self._drawConnection(sideData,shape)
-					elif i == len(self.mid)-1:
-						if self.mid[i]["firstShape"] == None:
-							self._drawConnection(self.mid[i-1],shape)
-						else:
-							self._drawConnection(sideData,shape)
-							self._drawConnection(self.right,shape)
-					elif i != 0:
-						if self.mid[i]["firstShape"] == None:
-							self._drawConnection(self.mid[i-1],shape)
-						else:
-							self._drawConnection(sideData,shape)
+			#for i in range(0,len(self.mid)-1):
+			#	if sideData["y"] == self.mid[i]["y"]:
+
+
 		#shape.Text = '"' + value + '"'
 		sideData["previousShape"] = shape
 		if (sideData["x"] == self.left["x"]) or (sideData["x"] == self.right["x"]):
