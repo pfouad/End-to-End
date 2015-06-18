@@ -1180,8 +1180,15 @@ class DynamicSchemaGenerator:
 
 			if midDrop == True:
 				self._drawMidLines(len(schemaData[0])-2)
-				m = 0
-
+				m = len(self.mid)-1
+				shape = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 5.6, 8.95)
+				shape.Cells("Width").Formula = 3
+				shape.Cells("Height").Formula = 0.5
+				shape.Text = "GTA CORE #4"
+				shape2 = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 11.15, 1.2)
+				shape2.Cells("Width").Formula = 3
+				shape2.Cells("Height").Formula = 0.5
+				shape2.Text = "GTA CORE #5"
 				for j in range(0,len(schemaData[0])):
 					tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
 					tupleZT = schemaData[0][j].ZEndEquip.partition("| ")
@@ -1200,6 +1207,7 @@ class DynamicSchemaGenerator:
 								if (tupleAT[2] == 'IP' or tupleZT[2] == 'IP' or tupleAkT == 'IP' or tupleZkT == 'IP'):
 							
 									if self.left["previousShape"] == None:
+										ASite = j
 										if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 											tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 											if tupleA[0]== 'End Equipment_new':
@@ -1229,6 +1237,7 @@ class DynamicSchemaGenerator:
 												elif tupleZkT[2] == 'Transport':
 													self._placeItem(self.left, "Nortel OM6500", tupleZk[2])
 									elif self.right["previousShape"] == None:
+										ZSite = j
 										if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 											tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 											if tupleA[0]== 'End Equipment_new':
@@ -1257,7 +1266,7 @@ class DynamicSchemaGenerator:
 													self._placeItem(self.right, "Router", tupleZk[2])
 												elif tupleZkT[2] == 'Transport':
 													self._placeItem(self.right, "Nortel OM6500", tupleZk[2])
-								else:
+								elif move == False:
 							
 									if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 										tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
@@ -1283,6 +1292,7 @@ class DynamicSchemaGenerator:
 								if (tupleAT[2] == 'IP' or tupleZT[2] == 'IP'):
 							
 									if self.left["previousShape"] == None:
+										ASite = j
 										if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 											tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 											if tupleA[0]== 'End Equipment_new':
@@ -1298,6 +1308,7 @@ class DynamicSchemaGenerator:
 												elif tupleZT[2] == 'Transport':
 													self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
 									elif self.right["previousShape"] == None:
+										ZSite = j
 										if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 											tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 											if tupleA[0]== 'End Equipment_new':
@@ -1312,7 +1323,7 @@ class DynamicSchemaGenerator:
 													self._placeItem(self.right, "Router", tupleZ[2])
 												elif tupleZT[2] == 'Transport':
 													self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
-								else:
+								elif move == False:
 							
 									if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 										tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
@@ -1328,6 +1339,7 @@ class DynamicSchemaGenerator:
 								if (tupleAT[2] == 'IP' or tupleZT[2] == 'IP'):
 							
 									if self.left["previousShape"] == None:
+										ASite = j
 										if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 											tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 											if tupleA[0]== 'End Equipment_new':
@@ -1343,6 +1355,7 @@ class DynamicSchemaGenerator:
 												elif tupleZT[2] == 'Transport':
 													self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
 									elif self.right["previousShape"] == None:
+										ZSite = j
 										if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 											tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 											if tupleA[0]== 'End Equipment_new':
@@ -1357,7 +1370,7 @@ class DynamicSchemaGenerator:
 													self._placeItem(self.right, "Router", tupleZ[2])
 												elif tupleZT[2] == 'Transport':
 													self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
-								else:
+								elif move == False:
 							
 									if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 										tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
@@ -1371,9 +1384,17 @@ class DynamicSchemaGenerator:
 											move = True
 
 					if move == True:
-						textbox = self.page.DrawRectangle(self.mid[m]["x"]+2,self.mid[m]["y"]+((self.mid[m]["y"]-1.2)/len(self.mid)) ,self.mid[m]["x"]+ 3.5, self.mid[m]["y"] + (self.mid[m]["y"]/len(self.mid)))
-						textbox.Text = schemaData[0][j].ASiteName + " ; " + schemaData[0][j].ASiteCLLI + " ; " +schemaData[0][j].ASiteCLLI + " ; " + schemaData[0][j].ASite
-						m = m + 1
+						textbox = self.page.DrawRectangle(self.mid[m]["x"]-2.4,self.mid[m]["y"]+ 1,self.mid[m]["x"]-1.2, self.mid[m]["y"] + 1.5)
+						textbox.Text = schemaData[0][j].ASiteName + " ; " + schemaData[0][j].ASiteCLLI + " ; " + schemaData[0][j].ASiteAddress
+						textbox.cellsU("LineColor").Formula = "RGB(255,255,255)"
+						if m < len(self.mid)-1:
+							shape = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 8.4,(m+1)*(7.75/len(self.mid))+1.2)
+							shape.Cells("Width").Formula = 3
+							shape.Cells("Height").Formula = 0.5
+							#textbox2 = self.page.DrawRectangle(self.mid[m]["x"]-4.9,(m+1)*(7.75/len(self.mid))+1.2,self.mid[m]["x"]-2.3, (m+1)*(7.75/len(self.mid))+1.2)
+							shape.Text = "GTA CORE #6"
+							#textbox2.cellsU("LineColor").Formula = "RGB(255,255,255)"
+						m = m - 1
 
 			#populate form
 			oleObjects = self.page.OLEObjects
@@ -1389,9 +1410,9 @@ class DynamicSchemaGenerator:
 				elif oleObject.Name == "lbl_circuit_id":
 					oleObject.Caption = schemaData[0][0].MasterCircuitName
 				elif oleObject.Name == "lbl_cust_addr":
-					oleObject.Caption = schemaData[0][len(schemaData[0])-1].ASiteName + " ; " + schemaData[0][len(schemaData[0])-1].ASiteCLLI + " ; " +schemaData[0][len(schemaData[0])-1].ASiteAddress
+					oleObject.Caption = schemaData[0][ZSite].ASiteName + " ; " + schemaData[0][ZSite].ASiteCLLI + " ; " +schemaData[0][ZSite].ASiteAddress
 				elif oleObject.Name == "lbl_head_addr":
-					oleObject.Caption = schemaData[0][0].ZName + " ; " + schemaData[0][0].ZCLLI + " ; " +schemaData[0][0].ZAddress
+					oleObject.Caption = schemaData[0][ASite].ZName + " ; " + schemaData[0][ASite].ZCLLI + " ; " +schemaData[0][ASite].ZAddress
 					
 					
 		except Exception as e:
@@ -1438,8 +1459,12 @@ class DynamicSchemaGenerator:
 	def _drawMidLines(self,value):
 		if value > 1:
 			for i in range(0,value):
-				if i!= value:
+				if i!= value-1:
 					self.page.DrawPolyline((5.9,(i+1)*(7.75/value)+1.2,10.9,(i+1)*(7.75/value)+1.2),8)
+					#shape = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 8.4, (i+1)*(7.75/value)+1.2)
+					#shape.Cells("Width").Formula = 3
+					#shape.Cells("Height").Formula = 0.5
+					#shape.Text = ""
 				self.mid.append({"previousShape": None, "firstShape": None, "x": 7.2, "y": (i+1)*(7.75/value)-(7.75/(value**3)), "connectionText": None})
 				
 				
@@ -1477,44 +1502,55 @@ class DynamicSchemaGenerator:
 	
 	
 	def _placeEquipment(self, sideData,type, value):
-		shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"])
+		if(sideData["x"] == self.right["x"]):
+			if type == "Router" and sideData["firstShape"] == None:
+				shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"]+ self.gap*2)
+				textbox = self.page.DrawRectangle(sideData["x"] + 3.5,sideData["y"]+ self.gap*2 -0.4 ,sideData["x"]+1, sideData["y"] + self.gap*2 + 0.25)
+				textbox.Text = '"' + value + '"'
+				self._drawConnection(sideData, shape)
+				sideData["connectionTextColor"] = "0"
+			elif type == "Nortel OM6500" and sideData["firstShape"] != None:
+				shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"]- self.gap*2)
+				textbox = self.page.DrawRectangle(sideData["x"] + 3.5,sideData["y"]- self.gap*2 -0.4 ,sideData["x"]+1, sideData["y"]- self.gap*2 +0.25)
+				textbox.Text = '"' + value + '"'
+				self._drawConnection(sideData, shape)
+				sideData["connectionTextColor"] = "0"
+			else:
+				shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"])
+				textbox = self.page.DrawRectangle(sideData["x"] + 3.5,sideData["y"] -0.4 ,sideData["x"]+1, sideData["y"]+0.25)
+				textbox.Text = '"' + value + '"'
+				self._drawConnection(sideData, shape)
+				sideData["connectionTextColor"] = "0"
+		else:
+			shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"])
 
 		if (sideData["x"] == self.left["x"]):
 			textbox = self.page.DrawRectangle(sideData["x"] - 3.5,sideData["y"] -0.4 ,sideData["x"]-1, sideData["y"]+0.25)
 			textbox.Text = '"' + value + '"'
 			self._drawConnection(sideData, shape)
 			sideData["connectionTextColor"] = "0"
-		elif(sideData["x"] == self.right["x"]):
-			textbox = self.page.DrawRectangle(sideData["x"] + 3.5,sideData["y"] -0.4 ,sideData["x"]+1, sideData["y"]+0.25)
-			textbox.Text = '"' + value + '"'
-			self._drawConnection(sideData, shape)
-			sideData["connectionTextColor"] = "0"
-		else:
+		elif not (sideData["x"] == self.right["x"]):
 			textbox = self.page.DrawRectangle(sideData["x"] + 1,sideData["y"] +0.3 ,sideData["x"]-1, sideData["y"]-0.3)
 			textbox.Text = '"' + value + '"'
 			for i in range(0,len(self.mid)):
 				if sideData["y"] == self.mid[i]["y"]:
 					
-					if i == 0:
+					if i == len(self.mid)-1:
 						if self.mid[i]["firstShape"] == None:
 							self._drawConnection(self.left,shape)
 						else:
 							self._drawConnection(sideData,shape)
-					elif i == len(self.mid)-1:
-						if self.mid[i]["firstShape"] == None:
-							self._drawConnection(self.mid[i-1],shape)
-						else:
+					elif i == 0:
+						if self.mid[i]["firstShape"] != None:
 							self._drawConnection(sideData,shape)
 							self._drawConnection(self.right,shape)
 					elif i != 0:
-						if self.mid[i]["firstShape"] == None:
-							self._drawConnection(self.mid[i-1],shape)
-						else:
+						if self.mid[i]["firstShape"] != None:
 							self._drawConnection(sideData,shape)
 		#shape.Text = '"' + value + '"'
 		sideData["previousShape"] = shape
 		if (sideData["x"] == self.left["x"]) or (sideData["x"] == self.right["x"]):
-			sideData["y"] = sideData["y"] + self.gap*2
+			sideData["y"] = sideData["y"] + self.gap*2	
 		else:
 			sideData["x"] = sideData["x"] + self.gap*1.6
 
