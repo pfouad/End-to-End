@@ -204,7 +204,7 @@ def main():
 						try:
 							equip_type_details = equip_dict.values(parent.ISPA_EQUIP_DICT_FK.NETWORK_KEY)  #get the details of the type of equipment that is ent2
 							desc = checkValue(equip_type_details.DESC1) #get the description of the chassis from the dictionary
-							a_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; "+ checkValue(chassis.gdm_ea_attr_21) + " | " + checkValue(chassis.gdm_ea_attr_20)
+							a_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " - "+ checkValue(chassis.gdm_ea_attr_21) + " | " + checkValue(chassis.gdm_ea_attr_20)
 							#if desc.upper().find("MULTIPLEXER")!= -1: #if there is the substring MULTIPLEXER in the description of the chassis then
 							#	#found mux! Now get the information of the mux shelf
 							#	mux = checkValue(equip_type_details.MODEL) + " ; " + desc + " ; "+ checkValue(parent.ISPA_SECTION_F_CODE) + " ; "+ checkValue(parent.ISPA_NAME)
@@ -351,7 +351,7 @@ def main():
 							if ent2 != first_port and entity_list[r].branch_number==1:
 								correct_order=False
 									
-							z_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " ; " + checkValue(chassis.gdm_ea_attr_21) + " | " + checkValue(chassis.gdm_ea_attr_20)
+							z_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " - " + checkValue(chassis.gdm_ea_attr_21) + " | " + checkValue(chassis.gdm_ea_attr_20)
 
 						except Exception as e:
 							#lov conversion not found
@@ -1179,12 +1179,104 @@ class DynamicSchemaGenerator:
 
 
 			if midDrop == True:
+				for i in range(0,len(schemaData[0])-1):
+					for j in range(1,len(schemaData[0])-1):
+						tupleAi = schemaData[0][i].ASiteEndEquip.partition("| ")
+						tupleZi = schemaData[0][i].ZEndEquip.partition("| ")
+						tupleAj = schemaData[0][j].ASiteEndEquip("| ")
+						tupleZj = schemaData[0][j].ZEndEquip("| ")
+
+						if i == 0 and (tupleAi[2] != 'IP' and tupleZi != 'IP'):
+							if tupleAj[2] == 'IP' or tupleZj == 'IP':
+								temp = schemaData[0][i]
+								schemaData[0][i] = schemaData[0][j]
+								schemaData[0][j] = temp 
+
+						elif i == len(schemaData[0])-1 and (tupleAi[2] != 'IP' and tupleZi[2] != 'IP'):
+							if tupleAj[2] == 'IP' or tupleZj == 'IP':
+								temp = schemaData[0][i]
+								schemaData[0][i] = schemaData[0][j]
+								schemaData[0][j] = temp
+						else:
+							usageAi = tupleAi[0].partition("- ")
+							usageZi = tupleZi[0].partition("- ")
+							usageAj = tupleAj[0].partition("- ")
+							usageZj = tupleZj[0].partition("- ")
+
+							if i == 0:
+								if tupleAi == 'Transport':
+									if j != len(schemaData[0])-2:
+										if usageAi.strip().upper() == usageZj.strip().upper():
+											temp = schemaData[0][len(schemaData[0])-2]
+											schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
+											schemaData[0][j] = temp
+										elif usageAi.strip().upper == usageAj.strip().upper():
+											_switchSides(j)
+											temp = schemaData[0][len(schemaData[0])-2]
+											schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
+											schemaData[0][j] = temp
+								elif tupleZi == 'Transport':
+									if j!= len(schemaData[0])-2:
+										if usageZi.strip().upper() == usageAj.strip().upper():
+											temp = schemaData[0][len(schemaData[0])-2]
+											schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
+											schemaData[0][j] = temp
+										elif usageZi.strip().upper() == usageZj.strip().upper():
+											_switchSides(j)
+											temp = schemaData[0][len(schemaData[0])-2]
+											schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
+											schemaData[0][j] = temp
+							elif i == len(schemaData[0])-1:
+								if tupleAi == 'Transport':
+									if j !=	1:
+										if usageAi.strip().upper() == usageZj.strip().upper():
+											temp = schemaData[0][1]
+											schemaData[0][1] = schemaData[0][j]
+											schemaData[0][j] = temp
+										elif usageAi.strip().upper() == usageAj.strip().upper():
+											_switchSides(j)
+											temp = schemaData[0][1]
+											schemaData[0][1] = schemaData[0][j]
+											schemaData[0][j] = temp
+								elif tupleZi == 'Transport':
+									if j!= 1:
+										if usageZi.strip().upper() == usageZj.strip().upper():
+											temp = schemaData[0][1]
+											schemaData[0][1] = schemaData[0][j]
+											schemaData[0][j] = temp
+										elif usageZi.strip().upper() == usageAj.strip().upper():
+											_switchSides(j)
+											temp = schemaData[0][1]
+											schemaData[0][1] = schemaData[0][j]
+											schemaData[0][j] = temp
+							else:
+								if tupleAi == 'Transport' or tupleZi == 'Transport':
+									if j != i:
+										if usageAi.strip().upper() == usageZj.strip().upper():
+											temp = schemaData[0][i+1]
+											schemaData[0][i+1] = schemaData[0][j]
+											schemaData[0][j] = temp
+										elif usageAi.strip().upper() == usageAj.strip().upper():
+											_switchSides(j)
+											temp = schemaData[0][i+1]
+											schemaData[0][i+1] = schemaData[0][j]
+											schemaData[0][j] = temp
+										elif usageZi.strip().upper() == usageAj.strip().upper():
+											temp = schemaData[0][i-1]
+											schemaData[0][i-1] = schemaData[0][j]
+											schemaData[0][j] = temp
+										elif usageZi.strip().upper() == usageZj.strip().upper():
+											_switchSides(j)
+											temp = schemaData[0][i-1]
+											schemaData[0][i-1] = schemaData[0][j]
+											schemaData[0][j] = temp
+
 				self._drawMidLines(len(schemaData[0])-2)
 				m = len(self.mid)-1
-				shape = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 5.6, 8.95)
-				shape.Cells("Width").Formula = 3
-				shape.Cells("Height").Formula = 0.5
-				shape.Text = "GTA CORE #4"
+				shape1 = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 5.6, 8.95)
+				shape1.Cells("Width").Formula = 3
+				shape1.Cells("Height").Formula = 0.5
+				shape1.Text = "GTA CORE #4"
 				shape2 = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 11.15, 1.2)
 				shape2.Cells("Width").Formula = 3
 				shape2.Cells("Height").Formula = 0.5
@@ -1430,7 +1522,42 @@ class DynamicSchemaGenerator:
 						return
 				if doc:
 					self.doc.SaveAs(filename)
-		
+		def _swtichSides(self, j):
+			temp1 = schemaData[0][j].ASite
+			schemaData[0][j].ASite = schemaData[0][j].ZSite
+			schemaData[0][j].ZSite = temp1
+
+			temp2 = schemaData[0][j].ASiteAddress
+			schemaData[0][j].ASiteAddress = schemaData[0][j].ZAddress
+			schemaData[0][j].ZAddress = temp2
+			
+			temp3 = schemaData[0][j].ASiteCLLI
+			schemaData[0][j].ASiteCLLI = schemaData[0][j].ZCLLI
+			schemaData[0][j].ZCLLI = temp3
+
+			temp4 = schemaData[0][j].ASiteEndEquip
+			schemaData[0][j].ASiteEndEquip = schemaData[0][j].ZEndEquip
+			schemaData[0][j].ZEndEquip = temp4
+
+			temp5 = schemaData[0][j].ASiteEquip
+			schemaData[0][j].ASiteEquip = schemaData[0][j].ZEquip
+			schemaData[0][j].ZEquip = temp5
+
+			temp6 = schemaData[0][j].ASiteLocation
+			schemaData[0][j].ASiteLocation = schemaData[0][j].ZLocation
+			schemaData[0][j].ZLocation = temp6
+			
+			temp7 = schemaData[0][j].ASiteName
+			schemaData[0][j].ASiteName = schemaData[0][j].ZName
+			schemaData[0][j].ZName = temp7
+
+			temp8 = schemaData[0][j].ASiteOspFiberCable
+			schemaData[0][j].ASiteOspFiberCable = schemaData[0][j].ZOspFiberCable
+			schemaData[0][j].ZOspFiberCable = temp8
+			
+			temp9 = schemaData[0][j].ASiteType
+			schemaData[0][j].ASiteType = schemaData[0][j].ZType
+			schemaData[0][j].ZType = temp9 
 			
 		
 	# end of generateVisio function
@@ -1438,7 +1565,6 @@ class DynamicSchemaGenerator:
 
 	# ---------------
 	# private methods
-	
 	def _drawConnection(self, sideData, toShape):
 		fromShape = sideData["previousShape"]
 		connector = None
