@@ -205,13 +205,7 @@ def main():
 							equip_type_details = equip_dict.values(parent.ISPA_EQUIP_DICT_FK.NETWORK_KEY)  #get the details of the type of equipment that is ent2
 							desc = checkValue(equip_type_details.DESC1) #get the description of the chassis from the dictionary
 							a_end_isp_design = addedInJob(ent2,"End Equipment")+": "+checkValue(ent2.ISPA_SECTION_F_CODE) + " ; " + checkValue(parent.ISPA_NAME) + " - "+ checkValue(chassis.gdm_ea_attr_21) + " | " + checkValue(chassis.gdm_ea_attr_20)
-							#if desc.upper().find("MULTIPLEXER")!= -1: #if there is the substring MULTIPLEXER in the description of the chassis then
-							#	#found mux! Now get the information of the mux shelf
-							#	mux = checkValue(equip_type_details.MODEL) + " ; " + desc + " ; "+ checkValue(parent.ISPA_SECTION_F_CODE) + " ; "+ checkValue(parent.ISPA_NAME)
 
-							#	if a_end_equip.count(addedInJob(parent,"Mux")+": "+mux)==0: #if the parent and the mux were both added in this job then
-							#		a_end_equip.append(addedInJob(parent,"Mux")+": "+mux)      #add the parent chassis to the a_end_equipment
-							#else:
 							#	#found true end
 							if ent2 != first_port and entity_list[i].branch_number==1: #if ent2 is not the first port and the ith element in the entity list's branch # = 1 then
 							    correct_order=False #the entities are not in the correct order
@@ -341,13 +335,6 @@ def main():
 						try:
 							equip_type_details = equip_dict.values(parent.ISPA_EQUIP_DICT_FK.NETWORK_KEY)
 							desc = checkValue(equip_type_details.DESC1)
-							#if desc.upper().find("MULTIPLEXER")!= -1:
-							#	#found mux
-							#	mux = checkValue(equip_type_details.MODEL) + " ; " + desc + " ; "+ checkValue(parent.ISPA_SECTION_F_CODE) + " ; "+ checkValue(parent.ISPA_NAME)
-							#	if z_end_equip.count(addedInJob(parent,"Mux")+": "+mux)==0:
-							#		z_end_equip.append(addedInJob(parent,"Mux")+": "+mux)
-							#else:
-							#	#found true end
 							if ent2 != first_port and entity_list[r].branch_number==1:
 								correct_order=False
 									
@@ -440,13 +427,7 @@ def main():
 			#check a/z end addresses
 			add_a_end = True   #if both of these are true then add A and Z locations
 			add_z_end = True
-			
-			#if z_end_address == a_end_address: #if the trace is within the same building and
-			#	if z_end_type.upper() == "A": # if z end is the A end
-			#		add_a_end=False    #dont add the a side
-			#	else:        #otherwise
-			#		add_z_end=False   #don't add z end
-					
+
 					
 			#check for z_end_equip ending with multi-fiber cable
 			#checking both ends if the last thing appended was a multifiber cable
@@ -639,7 +620,45 @@ class DynamicSchemaGenerator:
 		return should_overwrite
 
 	def generateVisio(self, schemaData):
-	
+		
+		def switchSides(j):
+			temp1 = schemaData[0][j].ASite
+			schemaData[0][j].ASite = schemaData[0][j].ZSite
+			schemaData[0][j].ZSite = temp1
+
+			temp2 = schemaData[0][j].ASiteAddress
+			schemaData[0][j].ASiteAddress = schemaData[0][j].ZAddress
+			schemaData[0][j].ZAddress = temp2
+			
+			temp3 = schemaData[0][j].ASiteCLLI
+			schemaData[0][j].ASiteCLLI = schemaData[0][j].ZCLLI
+			schemaData[0][j].ZCLLI = temp3
+
+			temp4 = schemaData[0][j].ASiteEndEquip
+			schemaData[0][j].ASiteEndEquip = schemaData[0][j].ZEndEquip
+			schemaData[0][j].ZEndEquip = temp4
+
+			temp5 = schemaData[0][j].ASiteEquip
+			schemaData[0][j].ASiteEquip = schemaData[0][j].ZEquip
+			schemaData[0][j].ZEquip = temp5
+
+			temp6 = schemaData[0][j].ASiteLocation
+			schemaData[0][j].ASiteLocation = schemaData[0][j].ZLocation
+			schemaData[0][j].ZLocation = temp6
+			
+			temp7 = schemaData[0][j].ASiteName
+			schemaData[0][j].ASiteName = schemaData[0][j].ZName
+			schemaData[0][j].ZName = temp7
+
+			temp8 = schemaData[0][j].ASiteOspFiberCable
+			schemaData[0][j].ASiteOspFiberCable = schemaData[0][j].ZOspFiberCable
+			schemaData[0][j].ZOspFiberCable = temp8
+			
+			temp9 = schemaData[0][j].ASiteType
+			schemaData[0][j].ASiteType = schemaData[0][j].ZType
+			schemaData[0][j].ZType = temp9
+
+			return schemaData[0][j]
 		try:
 			appVisio = win32com.client.Dispatch("Visio.Application")
 			appVisio.Visible = 1
@@ -670,19 +689,9 @@ class DynamicSchemaGenerator:
 			self.connectorMaster = appVisio.Application.ConnectorToolDataObject
 			self.page = doc.Pages.Item(1)
 		
-		
-			# -----------------------
-			# outside demux if exists
 
-			# add OutsideOspMux, or if it`s missing join 2 sides
 			shape = None
-			#if schemaData[0][0].OspMux != "" and schemaData[0][0].OspMux is not None:
-			#	tuple = schemaData[0][0].OspMux.partition(": ")
-					
-			#	shape = self.page.Drop(self.stencilShapeList.Masters("Router"), 8, 3)
-			#	shape.Cells("Prop.Row_1").Formula = '"' + tuple[2] + '"'
-			#else:
-			#shape = self.page.Drop(self.stencilShapeList.Masters("Empty"), 8, 3)
+
 			
 			self.left["firstShape"] = shape
 			self.left["previousShape"] = shape
@@ -692,34 +701,13 @@ class DynamicSchemaGenerator:
 			
 			self.center["firstShape"] = shape
 			self.center["previousShape"] = shape
-			
-			# --------------------
-			# left column, Z
+
 			#these two loops are to check if sites are the same, if so then add all relevant equipment to the site (it should loop through all traces)
 
 			if midDrop == False:
 				for j in range(0,len(schemaData[0])):
 					for k in range(0,len(schemaData[0])):
-					# put the outside cable, if there
-						#self.left["connectionText"] = schemaData[j].ZOspFiberCable
-					
 						if (schemaData[0][j].ASite == schemaData[0][j].ZSite) and j == 0:
-							#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
-							tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
-							
-							if(len(tupleA[2]) > 0):
-								self._placeItem(self.left, "Router", tupleA[2])
-							#else:
-							#	self._placeItem(self.left, " ", tupleA[0])
-							# put all other site equipment
-							#for i in reversed(range(0, len(schemaData[0][j].ZEndEquip))):
-							tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
-				
-								# if can't get type from string use cable (blank icon)
-							if (len(tupleZ[2]) > 0):
-								self._placeItem(self.left, "Router", tupleZ[2])
-							else:
-								self._placeItem(self.left, " ", tupleZ[0])
 							if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 								tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
@@ -728,9 +716,7 @@ class DynamicSchemaGenerator:
 										self._placeItem(self.left, "Router", tupleA[2])
 									elif tupleAT[2] == 'Transport':
 										self._placeItem(self.left, "Nortel OM6500", tupleA[2])
-								#else:
-								#	self._placeItem(self.left, " ", tupleA[2])
-							# put the end equipment
+
 							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
 								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
 								tupleZT = schemaData[0][j].ZEndEquip.partition("| ")
@@ -740,26 +726,8 @@ class DynamicSchemaGenerator:
 										self._placeItem(self.left, "Router", tupleZ[2])
 									elif tupleZT[2] == 'Transport':
 										self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
-								#else:
-								#	self._placeItem(self.left, " ", tupleZ[2])
-					
+
 							if (schemaData[0][j].ASite == schemaData[0][k].ASite) and (j != k):
-								#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
-								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
-
-								if(len(tupleA[2]) > 0):
-									self._placeItem(self.left, "Router", tupleA[2])
-								#else:
-								#	self._placeItem(self.left, " ", tupleA[0])
-
-								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
-								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
-
-								if(len(tupleAk[2]) > 0):
-									self._placeItem(self.left, "Router", tupleAk[2])
-								#else:
-								#	self._placeItem(self.left, " ", tupleAk[0])
-
 								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 									tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
@@ -769,8 +737,7 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.left, "Router", tupleA[2])
 										elif tupleAT[2] == 'Transport':
 											self._placeItem(self.left, "Nortel OM6500", tupleA[2])
-											#else:
-									#	self._placeItem(self.left, " ", tupleA[2])
+
 								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
 									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("| ")
@@ -780,22 +747,8 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.left, "Router",tupleAk[2])
 										elif tupleAkT[2] == 'Transport':
 											self._placeItem(self.left, "Nortel OM6500", tupleAk[2])
-											#else:
-									#	self._placeItem(self.left, " ",tupleAk[2])
-							if (schemaData[0][j].ASite == schemaData[0][k].ZSite) and (j!=k):
-								#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
-								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
-								if(len(tupleA[2]) > 0):
-									self._placeItem(self.left, "Router", tupleA[2])
-								#else:
-								#	self._placeItem(self.left, " ", tupleA[0])
-								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
-								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 
-								if(len(tupleZ[2]) > 0):
-									self._placeItem(self.left, "Router", tupleZ[2])
-								#else:
-								#	self._placeItem(self.left, " ", tupleZ[0])
+							if (schemaData[0][j].ASite == schemaData[0][k].ZSite) and (j!=k):
 								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 									tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
@@ -805,8 +758,7 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.left, "Router", tupleA[2])
 										elif tupleAT[2] == 'Transport':
 											self._placeItem(self.left, "Nortel OM6500", tupleA[2])
-									#else:
-									#	self._placeItem(self.left, " ", tupleA[2])
+
 								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
 									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 									tupleZT = schemaData[0][k].ZEndEquip.partition("| ")
@@ -816,25 +768,8 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.left, "Router", tupleZ[2])
 										elif tupleZT[2] == 'Transport':
 											self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
-									#else:
-									#	self._placeItem(self.left, " ", tupleZ[2])
+
 						elif (schemaData[0][j].ASite == schemaData[0][j].ZSite) and j != 0:
-							#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
-							tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
-							
-							if(len(tupleA[2]) > 0):
-								self._placeItem(self.right, "Router", tupleA[2])
-							#else:
-							#	self._placeItem(self.right, " ", tupleA[0])
-							# put all other site equipment
-							#for i in reversed(range(0, len(schemaData[0][j].ZEndEquip))):
-							tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
-				
-								# if can't get type from string use cable (blank icon)
-							if (len(tupleZ[2]) > 0):
-								self._placeItem(self.right, "Router", tupleZ[2])
-							else:
-								self._placeItem(self.right, " ", tupleZ[0])
 							if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 								tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
@@ -844,9 +779,7 @@ class DynamicSchemaGenerator:
 										self._placeItem(self.right, "Router", tupleA[2])
 									elif tuple[2] == 'Transport':
 										self._placeItem(self.right, "Nortel OM6500", tupleA[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleA[2])
-							# put the end equipment
+						
 							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
 								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
 								tupleZT = schemaData[0][j].ZEndEquip.partition("| ")
@@ -856,26 +789,8 @@ class DynamicSchemaGenerator:
 										self._placeItem(self.right, "Router", tupleZ[2])
 									elif tupleZT[2] == 'Transport':
 										self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleZ[2])
-					
+				
 							if (schemaData[0][j].ASite == schemaData[0][k].ASite) and (j != k):
-								#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
-								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
-
-								if(len(tupleA[2]) > 0):
-									self._placeItem(self.right, "Router", tupleA[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleA[0])
-
-								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
-								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
-
-								if(len(tupleAk[2]) > 0):
-									self._placeItem(self.right, "Router", tupleAk[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleAk[0])
-
 								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 									tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
@@ -885,8 +800,7 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.right, "Router", tupleA[2])
 										elif tupleAT[2] == 'Transport':
 											self._placeItem(self.right, "Nortel OM6500", tupleA[2])
-									#else:
-									#	self._placeItem(self.right, " ", tupleA[2])
+
 								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
 									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("| ")
@@ -896,21 +810,8 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.right, "Router",tupleAk[2])
 										elif tupleAkT[2] == 'Transport':
 											self._placeItem(self.right, "Nortel OM6500", tupleAk[2])
-									#else:
-									#	self._placeItem(self.right, " ",tupleAk[2])
+
 							if (schemaData[0][j].ASite == schemaData[0][k].ZSite) and (j!=k):
-								#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
-								tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
-								if(len(tupleA[2]) > 0):
-									self._placeItem(self.right, "Router", tupleA[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleA[0])
-								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
-								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
-								if(len(tupleZ[2]) > 0):
-									self._placeItem(self.right, "Router", tupleZ[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleZ[0])
 								if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 									tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
@@ -920,8 +821,7 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.right, "Router", tupleA[2])
 										elif tupleAT[2] == 'Transport':
 											self._placeItem(self.right, "Nortel OM6500", tupleA[2])
-									#else:
-									#	self._placeItem(self.right, " ", tupleA[2])
+
 								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
 									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 									tupleZT = schemaData[0][k].ZEndEquip.partition("| ")
@@ -931,15 +831,8 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.right, "Router", tupleZ[2])
 										elif tupleZT[2] == 'Transport':
 											self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
-									#else:
-									#	self._placeItem(self.right, " ", tupleZ[2])
 						elif (schemaData[0][j].ASite != schemaData[0][j].ZSite) and j == 0:
-							#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
-							tupleA = schemaData[0][j].ASiteEndEquip[i].partition(": ")
-							if(len(tupleA[2]) > 0):
-								self._placeItem(self.left, "Router", tupleA[2])
-							else:
-								self._placeItem(self.left, " ", tupleA[0])
+							
 							if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 									tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
@@ -949,17 +842,7 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.left, "Router", tupleA[2])
 										elif tupleAT == 'Transport':
 											self._placeItem(self.left, "Nortel OM6500", tupleA[2])
-									#else:
-									#	self._placeItem(self.left, " ", tupleA[2])
-						
-							#for i in reversed(range(0, len(schemaData[0][j].ZEquip))):
-							tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
-				
-									# if can't get type from string use cable (blank icon)
-							if (len(tupleZ[2]) > 0):
-								self._placeItem(self.right, "Router", tupleZ[2])
-							#else:
-							#	self._placeItem(self.right, " ", tupleZ[0])
+							
 							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
 								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
 								tupleZT = schemaData[0][j].ZEndEquip.partition("| ")
@@ -969,19 +852,8 @@ class DynamicSchemaGenerator:
 										self._placeItem(self.right, "Router", tupleZ[2])
 									elif tupleZT[2] == 'Transport':
 										self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleZ[2])
-
+								
 							if schemaData[0][j].ASite == schemaData[0][k].ASite and j!=k :
-								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
-								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
-
-								if(len(tupleAk[2]) > 0):
-									self._placeItem(self.left, "Router", tupleAk[2])
-								#else:
-								#	self._placeItem(self.left, " ", tupleAk[0])
-
-							
 								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
 									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("| ")
@@ -991,18 +863,9 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.left, "Router",tupleAk[2])
 										if tupleAkT[2] == 'Transport':
 											self._placeItem(self.left, "Nortel OM6500", tupleAk[2])
-									#else:
-									#	self._placeItem(self.left, " ",tupleAk[2])
-							if schemaData[0][j].ASite == schemaData[0][k].ZSite and j!=k:
-							
-								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
-								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 
-								if(len(tupleZ[2]) > 0):
-									self._placeItem(self.left, "Router", tupleZ[2])
-								#else:
-								#	self._placeItem(self.left, " ", tupleZ[0])
-							
+							if schemaData[0][j].ASite == schemaData[0][k].ZSite and j!=k:
+
 								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
 									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 									tupleZT = schemaData[0][k].ZEndEquip.partition("| ")
@@ -1012,16 +875,9 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.left, "Router", tupleZ[2])
 										elif tupleZT[2] == 'Transport':
 											self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
-									#else:
-									#	self._placeItem(self.left, " ", tupleZ[2])
-							if schemaData[0][j].ZSite == schemaData[0][k].ASite and j!=k:
-								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
-								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 
-								if(len(tupleAk[2]) > 0):
-									self._placeItem(self.right, "Router", tupleAk[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleAk[0])
+							if schemaData[0][j].ZSite == schemaData[0][k].ASite and j!=k:
+
 								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
 									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("| ")
@@ -1031,17 +887,9 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.right, "Router",tupleAk[2])
 										elif tupleAkT[2] == 'Transport':
 											self._placeItem(self.right, "Nortel OM6500", tupleAk[2])
-									#else:
-									#	self._placeItem(self.right, " ",tupleAk[2])
-							if schemaData[0][j].ZSite == schemaData[0][k].ZSite and j!=k:
-								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
-								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 
-								if(len(tupleZ[2]) > 0):
-									self._placeItem(self.right, "Router", tupleZ[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleZ[0])
-							
+							if schemaData[0][j].ZSite == schemaData[0][k].ZSite and j!=k:
+
 								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
 									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 									tupleZT = schemaData[0][k].ZEndEquip.partition("| ")
@@ -1051,15 +899,9 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.right, "Router", tupleZ[2])
 										elif tupleZT[2] == 'Transport':
 											self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
-									#else:
-									#	self._placeItem(self.right, " ", tupleZ[2])
+
 						elif (schemaData[0][j].ASite != schemaData[0][j].ZSite) and j != 0:
-							#for i in reversed(range(0, len(schemaData[0][j].ASiteEndEquip))):
-							tupleA = schemaData[0][j].ASiteEndEquip[i].partition(": ")
-							if(len(tupleA[2]) > 0):
-								self._placeItem(self.right, "Router", tupleA[2])
-							#else:
-							#	self._placeItem(self.right, " ", tupleA[0])
+
 							if (schemaData[0][j].ASiteEndEquip != None and schemaData[0][j].ASiteEndEquip != ""):
 									tupleA = schemaData[0][j].ASiteEndEquip.partition(": ")
 									tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
@@ -1069,17 +911,7 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.right, "Router", tupleA[2])
 										elif tupleAT[2] == 'Transport':
 											self._placeItem(self.right, "Nortel OM6500", tupleA[2])
-									#else:
-									#	self._placeItem(self.left, " ", tupleA[2])
-						
-							#for i in reversed(range(0, len(schemaData[0][j].ZEquip))):
-							tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
-				
-									# if can't get type from string use cable (blank icon)
-							if (len(tupleZ[2]) > 0):
-								self._placeItem(self.left, "Router", tupleZ[2])
-							#else:
-							#	self._placeItem(self.right, " ", tupleZ[0])
+		
 							if (schemaData[0][j].ZEndEquip != None and schemaData[0][j].ZEndEquip != ""):
 								tupleZ = schemaData[0][j].ZEndEquip.partition(": ")
 								tupleZT = schemaData[0][j].ZEndEquip.partition("| ")
@@ -1089,19 +921,9 @@ class DynamicSchemaGenerator:
 										self._placeItem(self.left, "Router", tupleZ[2])
 									elif tupleZT[2] == 'Transport':
 										self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleZ[2])
 
 							if schemaData[0][j].ASite == schemaData[0][k].ASite and j!=k :
-								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
-								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 
-								if(len(tupleAk[2]) > 0):
-									self._placeItem(self.right, "Router", tupleAk[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleAk[0])
-
-							
 								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
 									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("| ")
@@ -1111,18 +933,8 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.right, "Router",tupleAk[2])
 										elif tupleAkT[2] == 'Transport':
 											self._placeItem(self.right, "Nortel OM6500", tupleAk[2])
-									#else:
-									#	self._placeItem(self.right, " ",tupleAk[2])
-							if schemaData[0][j].ASite == schemaData[0][k].ZSite and j!=k:
-							
-								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
-								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 
-								if(len(tupleZ[2]) > 0):
-									self._placeItem(self.right, "Router", tupleZ[2])
-								#else:
-								#	self._placeItem(self.right, " ", tupleZ[0])
-							
+							if schemaData[0][j].ASite == schemaData[0][k].ZSite and j!=k:
 								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
 									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 									tupleZT = schemaData[0][k].ZEndEquip.partition("| ")
@@ -1132,16 +944,8 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.right, "Router", tupleZ[2])
 										elif tupleZT[2] == 'Transport':
 											self._placeItem(self.right, "Nortel OM6500", tupleZ[2])
-									#else:
-									#	self._placeItem(self.right, " ", tupleZ[2])
-							if schemaData[0][j].ZSite == schemaData[0][k].ASite and j!=k:
-								#for i in reversed(range(0, len(schemaData[0][k].ASiteEndEquip))):
-								tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 
-								if(len(tupleAk[2]) > 0):
-									self._placeItem(self.left, "Router", tupleAk[2])
-								#else:
-								#	self._placeItem(self.left, " ", tupleAk[0])
+							if schemaData[0][j].ZSite == schemaData[0][k].ASite and j!=k:
 								if(schemaData[0][k].ASiteEndEquip != None and schemaData[0][k].ASiteEndEquip != ""):
 									tupleAk = schemaData[0][k].ASiteEndEquip.partition(": ")
 									tupleAkT = schemaData[0][k].ASiteEndEquip.partition("| ")
@@ -1151,17 +955,9 @@ class DynamicSchemaGenerator:
 											self._placeItem(self.left, "Router",tupleAk[2])
 										elif tupleAkT[2] == 'Transport':
 											self._placeItem(self.left, "Nortel OM6500", tupleAk[2])
-									#else:
-									#	self._placeItem(self.left, " ",tupleAk[2])
-							if schemaData[0][j].ZSite == schemaData[0][k].ZSite and j!=k:
-								#for i in reversed(range(0, len(schemaData[0][k].ZEndEquip))):
-								tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 
-								if(len(tupleZ[2]) > 0):
-									self._placeItem(self.left, "Router", tupleZ[2])
-								#else:
-								#	self._placeItem(self.left, " ", tupleZ[0])
-							
+							if schemaData[0][j].ZSite == schemaData[0][k].ZSite and j!=k:
+
 								if (schemaData[0][k].ZEndEquip != None and schemaData[0][k].ZEndEquip != ""):
 									tupleZ = schemaData[0][k].ZEndEquip.partition(": ")
 									tupleZT = schemaData[0][k].ZEndEquip.partition("| ")
@@ -1172,9 +968,6 @@ class DynamicSchemaGenerator:
 										elif tupleZT[2] == 'Transport':
 											self._placeItem(self.left, "Nortel OM6500", tupleZ[2])
 
-									#else:
-									#	self._placeItem(self.left, " ", tupleZ[2])
-			
 				self._placeEquipment(self.center, "DWDM/IP System", schemaData[0][0].Usage)
 
 
@@ -1187,115 +980,291 @@ class DynamicSchemaGenerator:
 				shape2 = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 11.15, 1.2)
 				shape2.Cells("Width").Formula = 3
 				shape2.Cells("Height").Formula = 0.5
+
+
 				length = len(schemaData[0])
-				for i in range(0,length):
-					for j in range(0,length-1):
+				tupleA0 = schemaData[0][0].ASiteEndEquip.partition("| ")
+				tupleZ0 = schemaData[0][0].ZEndEquip.partition("| ")
+				tupleAend = schemaData[0][length].ASiteEquip.partition("| ")
+				tupleAend = schemaData[0][length].ZEndEquip.partition("| ")
+				ipZ = False
+				ipA = False
+				useA = False
+				useZ = False
+
+
+				if tupleA0[2] == 'IP' or tupleZ0[2] == 'IP':
+					ipA = True
+				if tupleAend[2] == 'IP' or tupleZend[2] == 'IP':
+					ipZ = True
+				if ipA == False or ipZ==False:
+					for i in range(1,length-1):
 						tupleAi = schemaData[0][i].ASiteEndEquip.partition("| ")
 						tupleZi = schemaData[0][i].ZEndEquip.partition("| ")
-						tupleAj = schemaData[0][j].ASiteEndEquip.partition("| ")
-						tupleZj = schemaData[0][j].ZEndEquip.partition("| ")
-						usageAi = tupleAi[0].partition("- ")
-						usageZi = tupleZi[0].partition("- ")
-						usageAj = tupleAj[0].partition("- ")
-						usageZj = tupleZj[0].partition("- ")
+						if tupleAi[2] == 'IP' or tupleZi[2] == 'IP':
+							if ipA == False:
+								temp = schemaData[0][0]
+								schemaData[0][0] = schemaData[0][i]
+								schemaData[0][i] = temp
+								ipA = True
+							elif ipZ == False:
+								temp = schemaData[0][length]
+								schemaData[0][length] = schemaData[0][i]
+								schemaData[0][i] = temp
+								ipZ = True
+								break
 
-						if i == 0 and (tupleAi[2] != 'IP' and tupleZi[2] != 'IP') and j!=i:
-							if tupleAj[2] == 'IP' or tupleZj[2] == 'IP':
-								temp = schemaData[0][i]
-								schemaData[0][i] = schemaData[0][j]
-								schemaData[0][j] = temp
-								if tupleAj[2] == 'Transport':
-									shape1.Text = usageAj[2]
-								elif tupleZj[2] == 'Transport':
-									shape1.Text = usageZj[2] 
 
-						elif i == len(schemaData[0])-1 and (tupleAi[2] != 'IP' and tupleZi[2] != 'IP') and j!=i:
-							if tupleAj[2] == 'IP' or tupleZj[2] == 'IP':
-								temp = schemaData[0][i]
-								schemaData[0][i] = schemaData[0][j]
-								schemaData[0][j] = temp
-								if tupleAj[2] == 'Transport':
-									shape2.Text = usageAj[2]
-								elif tupleZj[2] == 'Transport':
-									shape2.Text = usageZj[2]
+				if ipA == True and ipZ == True:
+					for i in range(1,length-1):
+						if useA == True and useZ == True:
+							break
 						else:
-							
+							tupleAi = schemaData[0][i].ASiteEndEquip.partition("| ")
+							tupleZi = schemaData[0][i].ZEndEquip.partition("| ")
+							usageAi = tupleAi[0].partition("- ")
+							usageAi[2].replace(" ", "")
+							usageZi = tupleZi[0].partition("- ")
+							usageZi[2].replace(" ", "")
+							if tupleA0[2] == 'Transport':
+								usageA0 = tupleA0[0].partition("- ")
+								shape1.Text = usageA0[2]
+								usageA0[2].replace(" ", "")
+								if usageA0[2].upper() == usageAi[2].upper:
+									if i == 1:
+										useA = True
+									else:
+										temp = schemaData[0][1]
+										schemaData[0][1] = schemaData[0][i]
+										schemaData[0][i] = temp
+										useA = True
+								elif usageA0[2].upper() == usageZi[2].upper:
+									if i == 1:
+										schemaData[0][i] = switchSides(i)
+										useA = True
+									else:
+										temp = schemaData[0][1]
+										schemaData[0][1] = switchSides(i)
+										schemaData[0][i] = temp
+							elif tupleZ0[2] == 'Transport':
+								usageZ0 = tupleZ0[0].partition("- ")
+								shape1.Text = usageZ0[2]
+								usageZ0[2].replace(" ", "")
+								if usageZ0[2].upper() == usageAi[2].upper():
+									if i == 1:
+										useA = True
+									else:
+										temp = schemaData[0][1]
+										schemaData[0][1] = schemaData[0][i]
+										schemaData[0][i] = temp
+										useA = True
+								elif usageZ0[2].upper() == usageZi[2].upper:
+									if i == 1:
+										schemaData[0][i] = switchSides(i)
+										useA = True
+									else:
+										temp = schemaData[0][1]
+										schemaData[0][1] = switchSides(i)
+										schemaData[0][i] = temp
+							if tupleAend[2] == 'Transport':
+								usageAend = tupleAend[0].partition("- ")
+								shape2.Text = usageAend[2]
+								usageAend[2].replace(" ", "")
+								if usageAend[2].upper() == usageZi[2].upper():
+									if i == length-1:
+										useZ = True
+									else:
+										temp = schemaData[0][length-1]
+										schemaData[0][length-1] = schemaData[0][i]
+										schemaData[0][i] = temp
+										useZ = True
+								elif usageAend[2].upper() == usageAi[2].upper():
+									if i == length-1:
+										schemaData[0][i] = switchSides(i)
+										useZ = True
+									else:
+										temp = schemaData[0][length-1]
+										schemaData[0][length-1] = switchSides(i)
+										schemaData[0][i] = temp
+										useZ = True
 
-							if i == 0:
-								if tupleAi[2] == 'Transport':
-									shape1.Text = usageAi[2]
-									if j != len(schemaData[0])-2:
-										
-										if usageAi[2].strip().upper() == usageZj[2].strip().upper() and j!=i:
-											temp = schemaData[0][len(schemaData[0])-2]
-											schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
-											schemaData[0][j] = temp
-										elif usageAi[2].strip().upper == usageAj[2].strip().upper() and j!=i:
-											_switchSides(j)
-											temp = schemaData[0][len(schemaData[0])-2]
-											schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
-											schemaData[0][j] = temp
-								elif tupleZi[2] == 'Transport':
-									shape1.Text = usageZi[2]
-									if j!= len(schemaData[0])-2:
-										
-										if usageZi[2].strip().upper() == usageAj[2].strip().upper() and j!=i:
-											temp = schemaData[0][len(schemaData[0])-2]
-											schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
-											schemaData[0][j] = temp
-										elif usageZi[2].strip().upper() == usageZj[2].strip().upper() and j!=i:
-											_switchSides(j)
-											temp = schemaData[0][len(schemaData[0])-2]
-											schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
-											schemaData[0][j] = temp
-							elif i == len(schemaData[0])-1:
-								if tupleAi[2] == 'Transport':
-									shape2.Text = usageAi[2]
-									if j !=	1:
-										
-										if usageAi[2].strip().upper() == usageZj[2].strip().upper() and j!=i:
-											temp = schemaData[0][1]
-											schemaData[0][1] = schemaData[0][j]
-											schemaData[0][j] = temp
-										elif usageAi[2].strip().upper() == usageAj[2].strip().upper() and j!=i:
-											_switchSides(j)
-											temp = schemaData[0][1]
-											schemaData[0][1] = schemaData[0][j]
-											schemaData[0][j] = temp
-								elif tupleZi[2] == 'Transport':
-									shape2.Text = usageZi[2]
-									if j!= 1:
-										
-										if usageZi[2].strip().upper() == usageZj[2].strip().upper() and j!=i:
-											temp = schemaData[0][1]
-											schemaData[0][1] = schemaData[0][j]
-											schemaData[0][j] = temp
-										elif usageZi[2].strip().upper() == usageAj[2].strip().upper() and j!=i:
-											_switchSides(j)
-											temp = schemaData[0][1]
-											schemaData[0][1] = schemaData[0][j]
-											schemaData[0][j] = temp
+							elif tupleZend[2] == 'Transport':
+								usageZend = tupleZend[0].partition("- ")
+								shape2.Text = usageAend[2]
+								usageZend.replace(" ", "")
+								if usageZend[2].upper() == usageZi[2].upper():
+									if i == length-1:
+										useZ = True
+									else:
+										temp = schemaData[0][length-1]
+										schemaData[0][length-1] = schemaData[0][i]
+										schemaData[0][i] = temp
+										useZ = True
+								elif usageZend[2].upper() == usageAi[2].upper():
+									if i == length-1:
+										schemaData[0][i] = switchSides(i)
+										useZ = True
+									else:
+										temp = schemaData[0][length-1]
+										schemaData[0][length-1] = switchSides(i)
+										schemaData[0][i] = temp
+										useZ = True
+					if useA == True and useZ == True:
+						tupleZ1 = schemaData[0][1].ZEndEquip.partition("| ")
+						usageZ1 = tupleZ1[2].parition("- ")
+						usageZ1.replace(" ", "")
+						tupleAN = schemaData[0][length-1].ASiteEndEquip.partition("| ")
+						usageAN = tupleAN[2].partition("- ")
+						usageAN.replace(" ", "")
+						if length > 4:
+							for i in range(2,length-2):
+								for j in range(2,length-2):
+									tupleAi = schemaData[0][i].ASiteEndEquip.partition("| ")
+									tupleZi = schemaData[0][i].ZEndEquip.partition("| ")
+									tupleAj = schemaData[0][j].ASiteEndEquip.partition("| ")
+									tupleZj = schemaData[0][j].ZEndEquip.partition("| ")
+									usageAi = tupleAi[0].partition("- ")
+									usageAi[2].replace(" ", "")
+									usageZi = tupleZi[0].partition("- ")
+									usageZi[2].replace(" ", "")
+									usageAj = tupleAj[0].partition("- ")
+									usageAj[2].replace(" ","")
+									usageZj = tupleZj[0].partition("- ")
+									usageZj[2].replace(" ", "")
+									if i == 2:
+										if usageZ1[2].upper() != usageAi[2].upper() and usageZ1[2].upper() != usageZi[2].upper():
+											if usageZ1[2].upper() == usageAj[2].upper():
+												temp = schemaData[0][i]
+												schemaData[0][i] = schemaData[0][j]
+												schemaData[0][j] = temp
+											elif usageZ1[2].upper() == usageZj[2].upper():
+												temp = schemaData[0][i]
+												schemaData[0][i] = switchSides(j)
+												schemaData[0][j] = temp
+										elif usageZ1[2].upper() == usageZi[2].upper():
+											schemaData[0][2] = switchSides(i)
+									elif i == length-2:
+										if usageAN[2].upper() != usageAi[2].upper() and usageAN[2].upper() != usageZi[2].upper():
+											if usageAN[2].upper() == usageAj[2].upper():
+												temp = schemaData[0][i]
+												schemaData[0][i] = switchSides(j)
+												schemaData[0][j] = temp
+											elif usageAN[2].upper() == usageZj[2].upper():
+												temp = schemaData[0][i]
+												schemaData[0][i] = schemaData[0][j]
+												schemaData[0][j] = temp
+										elif usageAN[2].upper() == usageAi[2].upper():
+											schemaData[0][i] = switchSides(i)
+
+
+					for i in range(0,length):
+					
+						for j in range(1,length):
+							tupleAi = schemaData[0][i].ASiteEndEquip.partition("| ")
+							tupleZi = schemaData[0][i].ZEndEquip.partition("| ")
+							tupleAj = schemaData[0][j].ASiteEndEquip.partition("| ")
+							tupleZj = schemaData[0][j].ZEndEquip.partition("| ")
+							usageAi = tupleAi[0].partition("- ")
+							usageAi[2].replace(" ", "")
+							usageZi = tupleZi[0].partition("- ")
+							usageZi[2].replace(" ", "")
+							usageAj = tupleAj[0].partition("- ")
+							usageAj[2].replace(" ","")
+							usageZj = tupleZj[0].partition("- ")
+							usageZj[2].replace(" ", "")
+							usgae = usageAi[2].upper()
+							#schemaData[0][i] = switchSides(i)
+							if i == 0 and (tupleAi[2] != 'IP' and tupleZi[2] != 'IP') and j!=i:
+								if tupleAj[2] == 'IP' or tupleZj[2] == 'IP':
+								
+									temp = schemaData[0][i]
+									schemaData[0][i] = switchSides(j)
+									schemaData[0][j] = temp
+
+							elif i == len(schemaData[0])-1 and (tupleAi[2] != 'IP' and tupleZi[2] != 'IP') and j!=i:
+								if tupleAj[2] == 'IP' or tupleZj[2] == 'IP':
+									temp = schemaData[0][i]
+									schemaData[0][i] = switchSides(j)
+									schemaData[0][j] = temp
 							else:
-								if tupleAi[2] == 'Transport' or tupleZi[2] == 'Transport':
-									if j != i:
-										if usageAi[2].strip().upper() == usageZj[2].strip().upper() and j!=i:
-											temp = schemaData[0][i+1]
-											schemaData[0][i+1] = schemaData[0][j]
-											schemaData[0][j] = temp
-										elif usageAi[2].strip().upper() == usageAj[2].strip().upper() and j!=i:
-											_switchSides(j)
-											temp = schemaData[0][i+1]
-											schemaData[0][i+1] = schemaData[0][j]
-											schemaData[0][j] = temp
-										elif usageZi[2].strip().upper() == usageAj[2].strip().upper() and j!=i:
-											temp = schemaData[0][i-1]
-											schemaData[0][i-1] = schemaData[0][j]
-											schemaData[0][j] = temp
-										elif usageZi[2].strip().upper() == usageZj[2].strip().upper() and j!=i:
-											_switchSides(j)
-											temp = schemaData[0][i-1]
-											schemaData[0][i-1] = schemaData[0][j]
-											schemaData[0][j] = temp
+								if i == 0:
+									if tupleAi[2] == 'Transport':
+										if j != len(schemaData[0])-2:
+										
+											if usageAi[2].upper() == usageAj[2].upper():
+											
+												temp = schemaData[0][len(schemaData[0])-2]
+												schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
+												schemaData[0][j] = temp
+											elif usageAi[2].strip().upper == usageZj[2].upper():
+											
+												temp = schemaData[0][len(schemaData[0])-2]
+												schemaData[0][len(schemaData[0])-2] = switchSides(j)
+												schemaData[0][j] = temp
+									elif tupleZi[2] == 'Transport':
+
+										if j!= len(schemaData[0])-2:
+										
+											if usageZi[2].upper() == usageAj[2].upper():
+											
+												temp = schemaData[0][len(schemaData[0])-2]
+												schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
+												schemaData[0][j] = temp
+											elif usageZi[2].upper() == usageZj[2].upper():
+												temp = schemaData[0][len(schemaData[0])-2]
+												schemaData[0][len(schemaData[0])-2] = switchSides(j)
+												schemaData[0][j] = temp
+								elif i == len(schemaData[0])-1:
+									if tupleAi[2] == 'Transport':
+										if j !=1:
+										
+											if usageAi[2].upper() == usageZj[2].upper() and j!=i:
+												temp = schemaData[0][1]
+												schemaData[0][1] = schemaData[0][j]
+												schemaData[0][j] = temp
+											elif usageAi[2].upper() == usageAj[2].upper() and j!=i:
+											
+												temp = schemaData[0][1]
+												schemaData[0][1] = switchSides(j)
+												schemaData[0][j] = temp
+									elif tupleZi[2] == 'Transport':
+										if j!=1:
+											if usageZi[2].upper() == usageZj[2].upper() and j!=i:
+												temp = schemaData[0][1]
+												schemaData[0][1] = schemaData[0][j]
+												schemaData[0][j] = temp
+											elif usageZi[2].upper() == usageAj[2].upper() and j!=i:
+												temp = schemaData[0][1]
+												schemaData[0][1] = switchSides(j)
+												schemaData[0][j] = temp
+								else:
+									if tupleAi[2] == 'Transport': 
+										if j != i:
+											if usageAi[2].upper() == usageZj[2].upper() and (j!= i+1 or j!= i-1):
+												temp = switchSides(i+1)
+											
+												schemaData[0][i+1] = schemaData[0][j]
+												schemaData[0][j] = temp
+											elif usageAi[2].upper() == usageAj[2].upper() and (j!= i+1 or j!= i-1):
+											
+												temp = schemaData[0][i+1]
+												schemaData[0][i+1] = switchSides(j)
+												schemaData[0][j] = temp
+									if tupleZi[2] == 'Transport':
+										if j!=i:
+											if usageZi[2].upper() == usageAj[2].upper() and (j!= i+1 or j!= i-1):
+												temp = switchSides(i-1)
+												schemaData[0][i-1] = schemaData[0][j]
+												schemaData[0][j] = temp
+											elif usageZi[2].upper() == usageZj[2].upper() and (j!= i+1 or j!= i-1):
+												temp = schemaData[0][i-1]
+												schemaData[0][i-1] = switchSides(j)
+												schemaData[0][j] = temp
+				if length > 3:
+					temp = schemaData[0][1]
+					schemaData[0][1] = schemaData[0][length-2]
+					schemaData[0][length-2] = temp
+
 				for j in range(0,len(schemaData[0])):
 					tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
 					tupleZT = schemaData[0][j].ZEndEquip.partition("| ")
@@ -1504,8 +1473,8 @@ class DynamicSchemaGenerator:
 						textbox.cellsU("LineColor").Formula = "RGB(255,255,255)"
 						if m < len(self.mid)-1:
 							shape = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 8.4,(m+1)*(7.75/len(self.mid))+1.2)
-							shape.Cells("Width").Formula = 3
-							shape.Cells("Height").Formula = 0.5
+							shape.Cells("Width").Formula = 2
+							shape.Cells("Height").Formula = 0.3
 							shape.Text = usageAT[2]
 						m = m - 1
 
@@ -1543,42 +1512,7 @@ class DynamicSchemaGenerator:
 						return
 				if doc:
 					self.doc.SaveAs(filename)
-		def _swtichSides(self, j):
-			temp1 = schemaData[0][j].ASite
-			schemaData[0][j].ASite = schemaData[0][j].ZSite
-			schemaData[0][j].ZSite = temp1
-
-			temp2 = schemaData[0][j].ASiteAddress
-			schemaData[0][j].ASiteAddress = schemaData[0][j].ZAddress
-			schemaData[0][j].ZAddress = temp2
-			
-			temp3 = schemaData[0][j].ASiteCLLI
-			schemaData[0][j].ASiteCLLI = schemaData[0][j].ZCLLI
-			schemaData[0][j].ZCLLI = temp3
-
-			temp4 = schemaData[0][j].ASiteEndEquip
-			schemaData[0][j].ASiteEndEquip = schemaData[0][j].ZEndEquip
-			schemaData[0][j].ZEndEquip = temp4
-
-			temp5 = schemaData[0][j].ASiteEquip
-			schemaData[0][j].ASiteEquip = schemaData[0][j].ZEquip
-			schemaData[0][j].ZEquip = temp5
-
-			temp6 = schemaData[0][j].ASiteLocation
-			schemaData[0][j].ASiteLocation = schemaData[0][j].ZLocation
-			schemaData[0][j].ZLocation = temp6
-			
-			temp7 = schemaData[0][j].ASiteName
-			schemaData[0][j].ASiteName = schemaData[0][j].ZName
-			schemaData[0][j].ZName = temp7
-
-			temp8 = schemaData[0][j].ASiteOspFiberCable
-			schemaData[0][j].ASiteOspFiberCable = schemaData[0][j].ZOspFiberCable
-			schemaData[0][j].ZOspFiberCable = temp8
-			
-			temp9 = schemaData[0][j].ASiteType
-			schemaData[0][j].ASiteType = schemaData[0][j].ZType
-			schemaData[0][j].ZType = temp9 
+		 
 			
 		
 	# end of generateVisio function
@@ -1608,11 +1542,7 @@ class DynamicSchemaGenerator:
 			for i in range(0,value):
 				if i!= value-1:
 					self.page.DrawPolyline((5.9,(i+1)*(7.75/value)+1.2,10.9,(i+1)*(7.75/value)+1.2),8)
-					#shape = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 8.4, (i+1)*(7.75/value)+1.2)
-					#shape.Cells("Width").Formula = 3
-					#shape.Cells("Height").Formula = 0.5
-					#shape.Text = ""
-				self.mid.append({"previousShape": None, "firstShape": None, "x": 7.2, "y": (i+1)*(7.75/value)-(7.75/(value**3)), "connectionText": None})
+				self.mid.append({"previousShape": None, "firstShape": None, "x": 7.2, "y": ((i+1)*(7.75/value))+ 1.2 -(7.75/(value*2)) , "connectionText": None})
 				
 				
 		else:
@@ -1668,30 +1598,49 @@ class DynamicSchemaGenerator:
 				textbox.Text = '"' + value + '"'
 				self._drawConnection(sideData, shape)
 				sideData["connectionTextColor"] = "0"
+		
+
+		elif (sideData["x"] == self.left["x"]):
+			if type == "Nortel OM6500" and sideData["firstShape"] == None:
+				shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"] + self.gap*2)
+				textbox = self.page.DrawRectangle(sideData["x"] - 3.5,sideData["y"]+ self.gap*2 -0.4 ,sideData["x"]-1, sideData["y"]+ self.gap*2+0.25)
+				textbox.Text = '"' + value + '"'
+				self._drawConnection(sideData, shape)
+				sideData["connectionTextColor"] = "0"
+			elif type == "Router" and sideData["firstShape"] != None:
+				shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"] - self.gap*2)
+				textbox = self.page.DrawRectangle(sideData["x"] - 3.5,sideData["y"]- self.gap*2 -0.4 ,sideData["x"]-1, sideData["y"]- self.gap*2+0.25)
+				textbox.Text = '"' + value + '"'
+				self._drawConnection(sideData, shape)
+				sideData["connectionTextColor"] = "0"
+			else:
+				shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"])
+				textbox = self.page.DrawRectangle(sideData["x"] - 3.5,sideData["y"] -0.4 ,sideData["x"]-1, sideData["y"]+0.25)
+				textbox.Text = '"' + value + '"'
+				self._drawConnection(sideData, shape)
+				sideData["connectionTextColor"] = "0"
 		else:
 			shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"])
-
-		if (sideData["x"] == self.left["x"]):
-			textbox = self.page.DrawRectangle(sideData["x"] - 3.5,sideData["y"] -0.4 ,sideData["x"]-1, sideData["y"]+0.25)
-			textbox.Text = '"' + value + '"'
-			self._drawConnection(sideData, shape)
-			sideData["connectionTextColor"] = "0"
-		elif not (sideData["x"] == self.right["x"]):
-			textbox = self.page.DrawRectangle(sideData["x"] + 1,sideData["y"] +0.3 ,sideData["x"]-1, sideData["y"]-0.3)
-			textbox.Text = '"' + value + '"'
-			for i in range(0,len(self.mid)):
-				if sideData["y"] == self.mid[i]["y"]:
-					
-					if i == len(self.mid)-1:
-						if self.mid[i]["firstShape"] != None:
-							self._drawConnection(sideData,shape)
-					elif i == 0:
-						if self.mid[i]["firstShape"] != None:
-							self._drawConnection(sideData,shape)
-							#self._drawConnection(self.right,shape)
-					elif i != 0:
-						if self.mid[i]["firstShape"] != None:
-							self._drawConnection(sideData,shape)
+			if not (sideData["x"] == self.right["x"]):
+				if len(self.mid)  > 0:
+					shape.Text = '"' + value + '"'
+					for i in range(0,len(self.mid)):
+						if sideData["y"] == self.mid[i]["y"]:
+							shape.cellsU("Height").Formula = 0.5
+							shape.cellsU("Width").Formula = 1.2
+							shape.cellsU("Char.Size").Formula = "6 pt"
+							if i == len(self.mid)-1:
+								if self.mid[i]["firstShape"] != None:
+									self._drawConnection(sideData,shape)
+							elif i == 0:
+								if self.mid[i]["firstShape"] != None:
+									self._drawConnection(sideData,shape)
+									#self._drawConnection(self.right,shape)
+							elif i != 0:
+								if self.mid[i]["firstShape"] != None:
+									self._drawConnection(sideData,shape)
+				else:
+					textbox = self.page.DrawRectangle(sideData["x"] + 1,sideData["y"] +0.3 ,sideData["x"]-1, sideData["y"]-0.3)
 		#shape.Text = '"' + value + '"'
 		sideData["previousShape"] = shape
 		if (sideData["x"] == self.left["x"]) or (sideData["x"] == self.right["x"]):
