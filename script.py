@@ -983,16 +983,15 @@ class DynamicSchemaGenerator:
 
 
 				length = len(schemaData[0])
-				tupleA0 = schemaData[0][0].ASiteEndEquip.partition("| ")
-				tupleZ0 = schemaData[0][0].ZEndEquip.partition("| ")
-				tupleAend = schemaData[0][length].ASiteEquip.partition("| ")
-				tupleAend = schemaData[0][length].ZEndEquip.partition("| ")
+				
 				ipZ = False
 				ipA = False
 				useA = False
 				useZ = False
-
-
+				tupleA0 = schemaData[0][0].ASiteEndEquip.partition("| ")
+				tupleZ0 = schemaData[0][0].ZEndEquip.partition("| ")
+				tupleAend = schemaData[0][length-1].ASiteEndEquip.partition("| ")
+				tupleZend = schemaData[0][length-1].ZEndEquip.partition("| ")
 				if tupleA0[2] == 'IP' or tupleZ0[2] == 'IP':
 					ipA = True
 				if tupleAend[2] == 'IP' or tupleZend[2] == 'IP':
@@ -1007,16 +1006,21 @@ class DynamicSchemaGenerator:
 								schemaData[0][0] = schemaData[0][i]
 								schemaData[0][i] = temp
 								ipA = True
+								tupleA0 = schemaData[0][0].ASiteEndEquip.partition("| ")
+								tupleZ0 = schemaData[0][0].ZEndEquip.partition("| ")
 							elif ipZ == False:
-								temp = schemaData[0][length]
-								schemaData[0][length] = schemaData[0][i]
+								temp = schemaData[0][length-1]
+								schemaData[0][length-1] = schemaData[0][i]
 								schemaData[0][i] = temp
 								ipZ = True
+								tupleAend = schemaData[0][length-1].ASiteEndEquip.partition("| ")
+								tupleZend = schemaData[0][length-1].ZEndEquip.partition("| ")
 								break
-
+				
+				
 
 				if ipA == True and ipZ == True:
-					for i in range(1,length-1):
+					for i in range(1,length-2):
 						if useA == True and useZ == True:
 							break
 						else:
@@ -1071,54 +1075,54 @@ class DynamicSchemaGenerator:
 								shape2.Text = usageAend[2]
 								usageAend[2].replace(" ", "")
 								if usageAend[2].upper() == usageZi[2].upper():
-									if i == length-1:
+									if i == length-2:
 										useZ = True
 									else:
-										temp = schemaData[0][length-1]
-										schemaData[0][length-1] = schemaData[0][i]
+										temp = schemaData[0][length-2]
+										schemaData[0][length-2] = schemaData[0][i]
 										schemaData[0][i] = temp
 										useZ = True
 								elif usageAend[2].upper() == usageAi[2].upper():
-									if i == length-1:
+									if i == length-2:
 										schemaData[0][i] = switchSides(i)
 										useZ = True
 									else:
-										temp = schemaData[0][length-1]
-										schemaData[0][length-1] = switchSides(i)
+										temp = schemaData[0][length-2]
+										schemaData[0][length-2] = switchSides(i)
 										schemaData[0][i] = temp
 										useZ = True
 
 							elif tupleZend[2] == 'Transport':
 								usageZend = tupleZend[0].partition("- ")
-								shape2.Text = usageAend[2]
-								usageZend.replace(" ", "")
+								shape2.Text = usageZend[2]
+								usageZend[2].replace(" ", "")
 								if usageZend[2].upper() == usageZi[2].upper():
-									if i == length-1:
+									if i == length-2:
 										useZ = True
 									else:
-										temp = schemaData[0][length-1]
-										schemaData[0][length-1] = schemaData[0][i]
+										temp = schemaData[0][length-2]
+										schemaData[0][length-2] = schemaData[0][i]
 										schemaData[0][i] = temp
 										useZ = True
 								elif usageZend[2].upper() == usageAi[2].upper():
-									if i == length-1:
+									if i == length-2:
 										schemaData[0][i] = switchSides(i)
 										useZ = True
 									else:
-										temp = schemaData[0][length-1]
-										schemaData[0][length-1] = switchSides(i)
+										temp = schemaData[0][length-2]
+										schemaData[0][length-2] = switchSides(i)
 										schemaData[0][i] = temp
 										useZ = True
 					if useA == True and useZ == True:
 						tupleZ1 = schemaData[0][1].ZEndEquip.partition("| ")
-						usageZ1 = tupleZ1[2].parition("- ")
-						usageZ1.replace(" ", "")
-						tupleAN = schemaData[0][length-1].ASiteEndEquip.partition("| ")
-						usageAN = tupleAN[2].partition("- ")
-						usageAN.replace(" ", "")
+						usageZ1 = tupleZ1[0].partition("- ")
+						usageZ1[2].replace(" ", "")
+						tupleAN = schemaData[0][length-2].ASiteEndEquip.partition("| ")
+						usageAN = tupleAN[0].partition("- ")
+						usageAN[2].replace(" ", "")
 						if length > 4:
-							for i in range(2,length-2):
-								for j in range(2,length-2):
+							for i in range(2,length-3):
+								for j in range(2,length-3):
 									tupleAi = schemaData[0][i].ASiteEndEquip.partition("| ")
 									tupleZi = schemaData[0][i].ZEndEquip.partition("| ")
 									tupleAj = schemaData[0][j].ASiteEndEquip.partition("| ")
@@ -1143,128 +1147,34 @@ class DynamicSchemaGenerator:
 												schemaData[0][j] = temp
 										elif usageZ1[2].upper() == usageZi[2].upper():
 											schemaData[0][2] = switchSides(i)
-									elif i == length-2:
-										if usageAN[2].upper() != usageAi[2].upper() and usageAN[2].upper() != usageZi[2].upper():
-											if usageAN[2].upper() == usageAj[2].upper():
-												temp = schemaData[0][i]
-												schemaData[0][i] = switchSides(j)
-												schemaData[0][j] = temp
-											elif usageAN[2].upper() == usageZj[2].upper():
-												temp = schemaData[0][i]
-												schemaData[0][i] = schemaData[0][j]
-												schemaData[0][j] = temp
-										elif usageAN[2].upper() == usageAi[2].upper():
-											schemaData[0][i] = switchSides(i)
-
-
-					for i in range(0,length):
-					
-						for j in range(1,length):
-							tupleAi = schemaData[0][i].ASiteEndEquip.partition("| ")
-							tupleZi = schemaData[0][i].ZEndEquip.partition("| ")
-							tupleAj = schemaData[0][j].ASiteEndEquip.partition("| ")
-							tupleZj = schemaData[0][j].ZEndEquip.partition("| ")
-							usageAi = tupleAi[0].partition("- ")
-							usageAi[2].replace(" ", "")
-							usageZi = tupleZi[0].partition("- ")
-							usageZi[2].replace(" ", "")
-							usageAj = tupleAj[0].partition("- ")
-							usageAj[2].replace(" ","")
-							usageZj = tupleZj[0].partition("- ")
-							usageZj[2].replace(" ", "")
-							usgae = usageAi[2].upper()
-							#schemaData[0][i] = switchSides(i)
-							if i == 0 and (tupleAi[2] != 'IP' and tupleZi[2] != 'IP') and j!=i:
-								if tupleAj[2] == 'IP' or tupleZj[2] == 'IP':
-								
-									temp = schemaData[0][i]
-									schemaData[0][i] = switchSides(j)
-									schemaData[0][j] = temp
-
-							elif i == len(schemaData[0])-1 and (tupleAi[2] != 'IP' and tupleZi[2] != 'IP') and j!=i:
-								if tupleAj[2] == 'IP' or tupleZj[2] == 'IP':
-									temp = schemaData[0][i]
-									schemaData[0][i] = switchSides(j)
-									schemaData[0][j] = temp
-							else:
-								if i == 0:
-									if tupleAi[2] == 'Transport':
-										if j != len(schemaData[0])-2:
-										
-											if usageAi[2].upper() == usageAj[2].upper():
-											
-												temp = schemaData[0][len(schemaData[0])-2]
-												schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
-												schemaData[0][j] = temp
-											elif usageAi[2].strip().upper == usageZj[2].upper():
-											
-												temp = schemaData[0][len(schemaData[0])-2]
-												schemaData[0][len(schemaData[0])-2] = switchSides(j)
-												schemaData[0][j] = temp
-									elif tupleZi[2] == 'Transport':
-
-										if j!= len(schemaData[0])-2:
-										
-											if usageZi[2].upper() == usageAj[2].upper():
-											
-												temp = schemaData[0][len(schemaData[0])-2]
-												schemaData[0][len(schemaData[0])-2] = schemaData[0][j]
-												schemaData[0][j] = temp
-											elif usageZi[2].upper() == usageZj[2].upper():
-												temp = schemaData[0][len(schemaData[0])-2]
-												schemaData[0][len(schemaData[0])-2] = switchSides(j)
-												schemaData[0][j] = temp
-								elif i == len(schemaData[0])-1:
-									if tupleAi[2] == 'Transport':
-										if j !=1:
-										
-											if usageAi[2].upper() == usageZj[2].upper() and j!=i:
-												temp = schemaData[0][1]
-												schemaData[0][1] = schemaData[0][j]
-												schemaData[0][j] = temp
-											elif usageAi[2].upper() == usageAj[2].upper() and j!=i:
-											
-												temp = schemaData[0][1]
-												schemaData[0][1] = switchSides(j)
-												schemaData[0][j] = temp
-									elif tupleZi[2] == 'Transport':
-										if j!=1:
-											if usageZi[2].upper() == usageZj[2].upper() and j!=i:
-												temp = schemaData[0][1]
-												schemaData[0][1] = schemaData[0][j]
-												schemaData[0][j] = temp
-											elif usageZi[2].upper() == usageAj[2].upper() and j!=i:
-												temp = schemaData[0][1]
-												schemaData[0][1] = switchSides(j)
-												schemaData[0][j] = temp
-								else:
-									if tupleAi[2] == 'Transport': 
-										if j != i:
-											if usageAi[2].upper() == usageZj[2].upper() and (j!= i+1 or j!= i-1):
-												temp = switchSides(i+1)
-											
-												schemaData[0][i+1] = schemaData[0][j]
-												schemaData[0][j] = temp
-											elif usageAi[2].upper() == usageAj[2].upper() and (j!= i+1 or j!= i-1):
-											
-												temp = schemaData[0][i+1]
-												schemaData[0][i+1] = switchSides(j)
-												schemaData[0][j] = temp
-									if tupleZi[2] == 'Transport':
-										if j!=i:
-											if usageZi[2].upper() == usageAj[2].upper() and (j!= i+1 or j!= i-1):
-												temp = switchSides(i-1)
-												schemaData[0][i-1] = schemaData[0][j]
-												schemaData[0][j] = temp
-											elif usageZi[2].upper() == usageZj[2].upper() and (j!= i+1 or j!= i-1):
-												temp = schemaData[0][i-1]
-												schemaData[0][i-1] = switchSides(j)
-												schemaData[0][j] = temp
-				if length > 3:
-					temp = schemaData[0][1]
-					schemaData[0][1] = schemaData[0][length-2]
-					schemaData[0][length-2] = temp
-
+									elif usageAN[2].upper() == usageAj[2].upper(): 
+										temp = schemaData[0][length-3]
+										schemaData[0][length-3] = switchSides(j)
+										schemaData[0][j] = temp
+									elif usageAN[2].upper() == usageZj[2].upper():
+										temp = schemaData[0][length-3]
+										schemaData[0][length-3] = schemaData[0][j]
+										schemaData[0][j] = temp
+									elif usageAN[2].upper() == usageAi[2].upper(): 
+										temp = schemaData[0][length-3]
+										schemaData[0][length-3] = switchSides(i)
+										schemaData[0][i] = temp
+									elif usageAN[2].upper() == usageZi[2].upper():
+										temp = schemaData[0][length-3]
+										schemaData[0][length-3] = schemaData[0][i]
+										schemaData[0][i] = temp 
+									elif usageAN[2].upper() == usageAi[2].upper() and i == length-3:
+										schemaData[0][i] = switchSides(i)
+									else:
+										if usageAi[2].upper() == usageZj[2].upper() and j < i and j != i-1:
+											temp = schemaData[0][j+1]
+											schemaData[0][j+1] = schemaData[0][i]
+											schemaData[0][i] = temp
+										elif usageZi[2].upper() == usageZj[2].upper() and j< i and j != i-1:
+											temp = schemaData[0][j+1]
+											schemaData[0][j+1] = switchSides(i)
+											schemaData[0][i] = temp	
+				
 				for j in range(0,len(schemaData[0])):
 					tupleAT = schemaData[0][j].ASiteEndEquip.partition("| ")
 					tupleZT = schemaData[0][j].ZEndEquip.partition("| ")
@@ -1468,9 +1378,10 @@ class DynamicSchemaGenerator:
 											move = True
 
 					if move == True:
-						textbox = self.page.DrawRectangle(self.mid[m]["x"]-2.4,self.mid[m]["y"]+ 1,self.mid[m]["x"]-1.2, self.mid[m]["y"] + 1.5)
+						textbox = self.page.DrawRectangle(self.mid[m]["x"]-1.75,self.mid[m]["y"]-0.25,self.mid[m]["x"]-1.13, self.mid[m]["y"] + 0.25)
 						textbox.Text = schemaData[0][j].ASiteName + " ; " + schemaData[0][j].ASiteCLLI + " ; " + schemaData[0][j].ASiteAddress
 						textbox.cellsU("LineColor").Formula = "RGB(255,255,255)"
+						textbox.cellsU("Char.Size").Formula = "5 pt"
 						if m < len(self.mid)-1:
 							shape = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 8.4,(m+1)*(7.75/len(self.mid))+1.2)
 							shape.Cells("Width").Formula = 2
