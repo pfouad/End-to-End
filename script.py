@@ -1378,14 +1378,23 @@ class DynamicSchemaGenerator:
 											move = True
 
 					if move == True:
-						textbox = self.page.DrawRectangle(self.mid[m]["x"]-1.75,self.mid[m]["y"]-0.25,self.mid[m]["x"]-1.13, self.mid[m]["y"] + 0.25)
-						textbox.Text = schemaData[0][j].ASiteName + " ; " + schemaData[0][j].ASiteCLLI + " ; " + schemaData[0][j].ASiteAddress
-						textbox.cellsU("LineColor").Formula = "RGB(255,255,255)"
-						textbox.cellsU("Char.Size").Formula = "5 pt"
+						if len(self.mid) > 3:
+							textbox = self.page.DrawRectangle(self.mid[m]["x"]-1.75,self.mid[m]["y"]-0.25,self.mid[m]["x"]-1.13, self.mid[m]["y"] + 0.25)
+							textbox.Text = schemaData[0][j].ASiteName + " ; " + schemaData[0][j].ASiteCLLI + " ; " + schemaData[0][j].ASiteAddress
+							textbox.cellsU("LineColor").Formula = "RGB(255,255,255)"
+							textbox.cellsU("Char.Size").Formula = "5 pt"
+						else:
+							textbox = self.page.DrawRectangle(self.mid[m]["x"]-2.4,self.mid[m]["y"]+ 1,self.mid[m]["x"]-1.2, self.mid[m]["y"] + 1.5)
+							textbox.Text = schemaData[0][j].ASiteName + " ; " + schemaData[0][j].ASiteCLLI + " ; " + schemaData[0][j].ASiteAddress
+							textbox.cellsU("LineColor").Formula = "RGB(255,255,255)"
 						if m < len(self.mid)-1:
 							shape = self.page.Drop(self.stencilShapeList.Masters("DWDM/IP System"), 8.4,(m+1)*(7.75/len(self.mid))+1.2)
-							shape.Cells("Width").Formula = 2
-							shape.Cells("Height").Formula = 0.3
+							if len(self.mid) > 3:
+								shape.Cells("Width").Formula = 3.4/(len(self.mid)* 0.2)
+								shape.Cells("Height").Formula = 0.8/(len(self.mid)* 0.25)
+							else:
+								shape.Cells("Width").Formula = 3
+								shape.Cells("Height").Formula = 0.5
 							shape.Text = usageAT[2]
 						m = m - 1
 
@@ -1491,13 +1500,13 @@ class DynamicSchemaGenerator:
 	
 	def _placeEquipment(self, sideData,type, value):
 		if(sideData["x"] == self.right["x"]):
-			if type == "Router" and sideData["firstShape"] == None:
+			if type == "Router" and sideData["firstShape"] == None and len(self.mid) > 1:
 				shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"]+ self.gap*2)
 				textbox = self.page.DrawRectangle(sideData["x"] + 3.5,sideData["y"]+ self.gap*2 -0.4 ,sideData["x"]+1, sideData["y"] + self.gap*2 + 0.25)
 				textbox.Text = '"' + value + '"'
 				self._drawConnection(sideData, shape)
 				sideData["connectionTextColor"] = "0"
-			elif type == "Nortel OM6500" and sideData["firstShape"] != None:
+			elif type == "Nortel OM6500" and sideData["firstShape"] != None and len(self.mid) > 1:
 				shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"]- self.gap*2)
 				textbox = self.page.DrawRectangle(sideData["x"] + 3.5,sideData["y"]- self.gap*2 -0.4 ,sideData["x"]+1, sideData["y"]- self.gap*2 +0.25)
 				textbox.Text = '"' + value + '"'
@@ -1512,13 +1521,13 @@ class DynamicSchemaGenerator:
 		
 
 		elif (sideData["x"] == self.left["x"]):
-			if type == "Nortel OM6500" and sideData["firstShape"] == None:
+			if type == "Nortel OM6500" and sideData["firstShape"] == None and len(self.mid) > 1:
 				shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"] + self.gap*2)
 				textbox = self.page.DrawRectangle(sideData["x"] - 3.5,sideData["y"]+ self.gap*2 -0.4 ,sideData["x"]-1, sideData["y"]+ self.gap*2+0.25)
 				textbox.Text = '"' + value + '"'
 				self._drawConnection(sideData, shape)
 				sideData["connectionTextColor"] = "0"
-			elif type == "Router" and sideData["firstShape"] != None:
+			elif type == "Router" and sideData["firstShape"] != None and len(self.mid) > 1:
 				shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"] - self.gap*2)
 				textbox = self.page.DrawRectangle(sideData["x"] - 3.5,sideData["y"]- self.gap*2 -0.4 ,sideData["x"]-1, sideData["y"]- self.gap*2+0.25)
 				textbox.Text = '"' + value + '"'
@@ -1533,26 +1542,26 @@ class DynamicSchemaGenerator:
 		else:
 			shape = self.page.Drop(self.stencilShapeList.Masters(type), sideData["x"], sideData["y"])
 			if not (sideData["x"] == self.right["x"]):
-				if len(self.mid)  > 0:
+				length = len(self.mid)
+				if length  > 0:
 					shape.Text = '"' + value + '"'
-					for i in range(0,len(self.mid)):
+					for i in range(0,length):
 						if sideData["y"] == self.mid[i]["y"]:
-							shape.cellsU("Height").Formula = 0.5
-							shape.cellsU("Width").Formula = 1.2
-							shape.cellsU("Char.Size").Formula = "6 pt"
+							if length > 2:
+								shape.cellsU("Height").Formula = 1.5/((length-2) * 0.5)
+								shape.cellsU("Width").Formula = 2/((length-2) *0.33)
+								shape.cellsU("Char.Size").Formula = "6 pt"
 							if i == len(self.mid)-1:
 								if self.mid[i]["firstShape"] != None:
 									self._drawConnection(sideData,shape)
 							elif i == 0:
 								if self.mid[i]["firstShape"] != None:
 									self._drawConnection(sideData,shape)
-									#self._drawConnection(self.right,shape)
 							elif i != 0:
 								if self.mid[i]["firstShape"] != None:
 									self._drawConnection(sideData,shape)
 				else:
 					textbox = self.page.DrawRectangle(sideData["x"] + 1,sideData["y"] +0.3 ,sideData["x"]-1, sideData["y"]-0.3)
-		#shape.Text = '"' + value + '"'
 		sideData["previousShape"] = shape
 		if (sideData["x"] == self.left["x"]) or (sideData["x"] == self.right["x"]):
 			sideData["y"] = sideData["y"] + self.gap*2	
